@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title><%= content_for(:title) || "Marquee" %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <%= yield :head %>
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+    <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+
+  <body class="min-h-screen bg-[#f4f0e6] text-[#1c1915] antialiased">
+    <%= render "shared/flash" %>
+
+    <% if content_for?(:unframed) %>
+      <%= yield %>
+    <% else %>
+      <div data-controller="nav" class="relative min-h-screen lg:grid lg:grid-cols-[240px_minmax(0,1fr)]">
+        <aside data-nav-target="panel" class="hidden bg-[#14241c] text-[#f4f0e6] max-lg:absolute max-lg:inset-x-0 max-lg:top-14 max-lg:z-40 max-lg:shadow-xl lg:block lg:min-h-screen">
+          <div class="flex h-full flex-col px-4 py-6">
+            <%= link_to dashboard_path, class: "block px-2" do %>
+              <p class="font-serif text-3xl leading-none">Marquee</p>
+              <p class="mt-2 text-xs tracking-wide text-[#b7c7bb]">WhatsApp desk</p>
+            <% end %>
+
+            <nav class="mt-8 space-y-1" aria-label="Primary">
+              <%= link_to "Desk", dashboard_path, class: nav_class(dashboard_path) %>
+              <%= link_to "Templates", templates_path, class: nav_class(templates_path) %>
+              <%= link_to "Campaigns", campaigns_path, class: nav_class(campaigns_path) %>
+              <%= link_to "Connection", settings_path, class: nav_class(settings_path) %>
+            </nav>
+
+            <% if current_user.whatsapp_account.demo_mode? %>
+              <p class="mt-6 rounded-2xl bg-white/10 px-3 py-3 text-xs leading-relaxed text-[#d5e4d8]">Demo mode is on. Reviews and delivery stay inside Marquee.</p>
+            <% else %>
+              <p class="mt-6 rounded-2xl bg-[#1f7a45]/40 px-3 py-3 text-xs leading-relaxed text-white">Live Meta connection.</p>
+            <% end %>
+
+            <div class="mt-auto px-2 pt-8">
+              <p class="text-sm font-medium"><%= current_user.name %></p>
+              <% if current_user.company.present? %>
+                <p class="text-xs text-[#b7c7bb]"><%= current_user.company %></p>
+              <% end %>
+              <div class="mt-3 flex items-center gap-4 text-sm">
+                <%= link_to "Account", edit_user_registration_path, class: "text-[#d5e4d8] hover:text-white" %>
+                <%= button_to "Sign out", destroy_user_session_path, method: :delete, class: "bg-transparent p-0 text-sm text-[#b7c7bb] hover:text-white", form: { class: "inline" } %>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        <div class="min-w-0">
+          <header class="flex items-center justify-between border-b border-[#e4dccf] px-4 py-3 lg:hidden">
+            <%= link_to "Marquee", dashboard_path, class: "font-serif text-2xl" %>
+            <button type="button" class="rounded-full px-3 py-1.5 text-sm ring-1 ring-[#e4dccf]" data-action="nav#toggle">Menu</button>
+          </header>
+
+          <main class="px-4 py-6 sm:px-8 lg:px-10 lg:py-10">
+            <div class="mx-auto max-w-6xl">
+              <% if content_for?(:heading) %>
+                <div class="mb-8 flex flex-wrap items-end justify-between gap-4">
+                  <div class="max-w-2xl">
+                    <h1 class="font-serif text-4xl tracking-tight text-[#14241c] sm:text-5xl"><%= yield :heading %></h1>
+                    <% if content_for?(:subheading) %>
+                      <p class="mt-3 text-base leading-relaxed text-[#5c564e]"><%= yield :subheading %></p>
+                    <% end %>
+                  </div>
+                  <% if content_for?(:actions) %>
+                    <div class="flex flex-wrap gap-2"><%= yield :actions %></div>
+                  <% end %>
+                </div>
+              <% end %>
+              <%= yield %>
+            </div>
+          </main>
+        </div>
+      </div>
+    <% end %>
+  </body>
+</html>

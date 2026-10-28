@@ -1,0 +1,57 @@
+<% content_for :title, "Desk — Marquee" %>
+<% content_for :heading, "#{greeting}, #{current_user.name.split.first}" %>
+<% content_for :subheading, "Templates move from draft to Meta review, then into campaigns once they are approved." %>
+<% content_for :actions do %>
+  <%= link_to "New template", new_template_path, class: btn_primary %>
+<% end %>
+
+<section class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+  <% [
+    ["Approved", @templates.where(status: "approved").count, templates_path(status: "approved")],
+    ["In review", @templates.where(status: "pending").count, templates_path(status: "pending")],
+    ["Rejected", @templates.where(status: "rejected").count, templates_path(status: "rejected")],
+    ["Delivered", current_user.campaigns.sum(:delivered_count), campaigns_path]
+  ].each do |label, value, path| %>
+    <%= link_to path, class: "rounded-3xl bg-white px-5 py-4 ring-1 ring-[#e4dccf] transition hover:-translate-y-0.5" do %>
+      <p class="text-sm text-[#6d645b]"><%= label %></p>
+      <p class="mt-2 font-serif text-4xl text-[#14241c]"><%= value %></p>
+    <% end %>
+  <% end %>
+</section>
+
+<section class="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(280px,0.8fr)]">
+  <div class="rounded-3xl bg-white p-5 ring-1 ring-[#e4dccf] sm:p-6">
+    <div class="flex items-center justify-between gap-3">
+      <h2 class="font-serif text-2xl">Recent campaigns</h2>
+      <%= link_to "All campaigns", campaigns_path, class: "text-sm font-medium text-[#1f7a45]" %>
+    </div>
+    <% if @campaigns.any? %>
+      <ul class="mt-4 divide-y divide-[#efe8da]">
+        <% @campaigns.each do |campaign| %>
+          <li>
+            <%= link_to campaign, class: "flex items-center justify-between gap-3 py-3" do %>
+              <span>
+                <span class="block font-medium"><%= campaign.name %></span>
+                <span class="text-sm text-[#6d645b]"><%= campaign.template.name %> · <%= pluralize(campaign.total_recipients, "person") %></span>
+              </span>
+              <%= status_pill(campaign.status) %>
+            <% end %>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <p class="mt-4 text-sm leading-relaxed text-[#5c564e]">No campaigns yet. Approve a template first, then build an audience from people who opted in.</p>
+    <% end %>
+  </div>
+
+  <div class="rounded-3xl bg-[#14241c] p-5 text-[#f4f0e6] sm:p-6">
+    <h2 class="font-serif text-2xl">Connection</h2>
+    <% if @account.demo_mode? %>
+      <p class="mt-3 text-sm leading-relaxed text-[#d5e4d8]">Demo mode approves clean templates in a few seconds and marks messages delivered without calling Meta. Turn it off in Connection when you have a WhatsApp Business account, phone number id, and system user token.</p>
+      <%= link_to "Review connection", settings_path, class: "mt-5 inline-flex rounded-full bg-white px-4 py-2 text-sm font-medium text-[#14241c]" %>
+    <% else %>
+      <p class="mt-3 text-sm leading-relaxed text-[#d5e4d8]">Live sends use WABA <%= @account.waba_id %> and phone number id <%= @account.phone_number_id %>.</p>
+      <%= link_to "Edit connection", settings_path, class: "mt-5 inline-flex rounded-full bg-white px-4 py-2 text-sm font-medium text-[#14241c]" %>
+    <% end %>
+  </div>
+</section>

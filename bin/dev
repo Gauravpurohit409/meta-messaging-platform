@@ -1,0 +1,12 @@
+#!/usr/bin/env sh
+
+if ! command -v bundle >/dev/null 2>&1; then
+  export GEM_HOME="${GEM_HOME:-$HOME/.gem}"
+  export PATH="$GEM_HOME/bin:$PATH"
+fi
+
+export PORT="${PORT:-47291}"
+export RUBY_DEBUG_OPEN="true"
+export RUBY_DEBUG_LAZY="true"
+
+exec bundle exec foreman start -f Procfile.dev "$@"

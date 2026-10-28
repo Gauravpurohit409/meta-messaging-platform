@@ -1,0 +1,50 @@
+<% content_for :title, "#{@template.name} — Marquee" %>
+<% content_for :heading, @template.name %>
+<% content_for :subheading, "#{@template.category.humanize} · #{@template.language_name}" %>
+<% content_for :actions do %>
+  <% if @template.editable? %>
+    <%= link_to "Edit", edit_template_path(@template), class: btn_secondary %>
+    <%= button_to "Submit for review", submit_template_path(@template), method: :post, class: btn_primary, form: { data: { turbo_confirm: "Submit this template for review?" } }, data: { turbo_submits_with: "Submitting…" } %>
+  <% end %>
+  <%= button_to "Duplicate", duplicate_template_path(@template), method: :post, class: btn_secondary %>
+  <% if @template.editable? %>
+    <%= button_to "Delete", @template, method: :delete, class: btn_danger, form: { data: { turbo_confirm: "Delete this draft?" } } %>
+  <% end %>
+<% end %>
+
+<%= turbo_stream_from @template %>
+
+<div class="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+  <div class="space-y-4">
+    <%= render "status_panel", template: @template %>
+    <dl class="rounded-3xl bg-white p-5 ring-1 ring-[#e4dccf] sm:p-6">
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div>
+          <dt class="text-xs uppercase tracking-wide text-[#6d645b]">Submitted</dt>
+          <dd class="mt-1"><%= stamp(@template.submitted_at) %></dd>
+        </div>
+        <div>
+          <dt class="text-xs uppercase tracking-wide text-[#6d645b]">Approved</dt>
+          <dd class="mt-1"><%= stamp(@template.approved_at) %></dd>
+        </div>
+      </div>
+      <% if @template.example_values.any? %>
+        <div class="mt-5">
+          <dt class="text-xs uppercase tracking-wide text-[#6d645b]">Samples</dt>
+          <dd class="mt-2 flex flex-wrap gap-2">
+            <% @template.example_values.each do |key, value| %>
+              <span class="rounded-full bg-[#f4f0e6] px-3 py-1 text-xs"><%= @template.parameter_label(key) %>: <%= value %></span>
+            <% end %>
+          </dd>
+        </div>
+      <% end %>
+    </dl>
+  </div>
+
+  <%= render "shared/phone",
+        caption: @template.name,
+        header: fill_variables(@template.header_text, @template.example_values, "header"),
+        body: fill_variables(@template.body, @template.example_values, "body"),
+        footer: @template.footer_text,
+        buttons: @template.buttons.map { |button| button["text"] }.compact_blank %>
+</div>

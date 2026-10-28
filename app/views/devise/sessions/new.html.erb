@@ -1,0 +1,24 @@
+<% content_for :title, "Sign in — Marquee" %>
+<% content_for :unframed, "true" %>
+
+<%= render layout: "shared/auth_frame", locals: { title: "Sign in", lede: "Pick up the desk where you left the last template." } do %>
+  <%= form_for(resource, as: resource_name, url: session_path(resource_name)) do |f| %>
+    <div class="space-y-4">
+      <%= f.label :email, class: label_class %>
+      <%= f.email_field :email, autofocus: true, autocomplete: "email", required: true, class: field_class %>
+      <%= f.label :password, class: "#{label_class} mt-4" %>
+      <%= f.password_field :password, autocomplete: "current-password", required: true, class: field_class %>
+      <% if devise_mapping.rememberable? %>
+        <label class="mt-4 flex items-center gap-2 text-sm">
+          <%= f.check_box :remember_me %>
+          Remember this browser
+        </label>
+      <% end %>
+      <%= f.submit "Sign in", class: "#{btn_primary} mt-2 w-full" %>
+    </div>
+  <% end %>
+  <div class="mt-6 text-sm text-[#5c564e]">
+    <%= render "devise/shared/links" %>
+  </div>
+  <p class="mt-6 rounded-2xl bg-white px-4 py-3 text-sm text-[#5c564e] ring-1 ring-[#e4dccf]">Demo desk · demo@marquee.test · password123</p>
+<% end %>

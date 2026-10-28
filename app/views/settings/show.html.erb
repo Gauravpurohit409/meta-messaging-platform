@@ -1,0 +1,57 @@
+<% content_for :title, "Connection — Marquee" %>
+<% content_for :heading, "Connection" %>
+<% content_for :subheading, "Demo mode lets you rehearse the whole desk. Live mode calls the WhatsApp Cloud API with your system user token." %>
+
+<%= render "shared/errors", record: @account %>
+
+<div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+  <%= form_with model: @account, url: settings_path, method: :patch, class: "space-y-5" do |form| %>
+    <div class="rounded-3xl bg-white p-5 ring-1 ring-[#e4dccf] sm:p-6">
+      <label class="flex items-start gap-3">
+        <%= form.check_box :demo_mode, class: "mt-1" %>
+        <span>
+          <span class="font-medium">Demo mode</span>
+          <span class="mt-1 block text-sm leading-relaxed text-[#5c564e]">Approvals and delivery are simulated. A template whose body mentions “legal action” is rejected. Phone numbers ending in 0000 fail delivery. Nothing is sent to WhatsApp.</span>
+        </span>
+      </label>
+    </div>
+
+    <div class="rounded-3xl bg-white p-5 ring-1 ring-[#e4dccf] sm:p-6">
+      <h2 class="font-medium">WhatsApp Business account</h2>
+      <p class="mt-1 text-sm text-[#6d645b]">Required only when demo mode is off. Create a system user token with whatsapp_business_messaging and whatsapp_business_management.</p>
+      <div class="mt-4 space-y-4">
+        <%= form.label :waba_id, "WhatsApp Business account ID", class: label_class %>
+        <%= form.text_field :waba_id, class: field_class, autocomplete: "off" %>
+        <%= form.label :phone_number_id, "Phone number ID", class: "#{label_class} mt-3" %>
+        <%= form.text_field :phone_number_id, class: field_class, autocomplete: "off" %>
+        <%= form.label :display_phone, "Number customers see", class: "#{label_class} mt-3" %>
+        <%= form.text_field :display_phone, class: field_class, placeholder: "+91 33 4000 2210" %>
+        <%= form.label :access_token, "System user token", class: "#{label_class} mt-3" %>
+        <%= form.password_field :access_token, class: field_class, autocomplete: "new-password", placeholder: @account.access_token.present? ? "Saved — leave blank to keep it" : "Paste the token" %>
+      </div>
+    </div>
+
+    <%= form.submit "Save connection", class: btn_primary, data: { turbo_submits_with: "Saving…" } %>
+  <% end %>
+
+  <aside class="space-y-4">
+    <div class="rounded-3xl bg-[#14241c] p-5 text-[#f4f0e6]">
+      <h2 class="font-serif text-2xl">Webhook</h2>
+      <p class="mt-2 text-sm leading-relaxed text-[#d5e4d8]">Point the Meta app at this URL and subscribe to message_template_status_update and messages.</p>
+      <div class="mt-4" data-controller="clipboard">
+        <label class="text-xs uppercase tracking-wide text-[#b7c7bb]">Callback URL</label>
+        <input data-clipboard-target="source" readonly value="<%= webhooks_meta_url %>" class="mt-1 w-full rounded-xl bg-white/10 px-3 py-2 text-sm text-white">
+        <button type="button" class="mt-2 text-sm font-medium text-white" data-action="clipboard#copy" data-clipboard-target="label">Copy URL</button>
+      </div>
+      <div class="mt-4" data-controller="clipboard">
+        <label class="text-xs uppercase tracking-wide text-[#b7c7bb]">Verify token</label>
+        <input data-clipboard-target="source" readonly value="<%= @account.verify_token %>" class="mt-1 w-full rounded-xl bg-white/10 px-3 py-2 font-mono text-xs text-white">
+        <div class="mt-2 flex gap-4">
+          <button type="button" class="text-sm font-medium text-white" data-action="clipboard#copy" data-clipboard-target="label">Copy token</button>
+          <%= button_to "Regenerate", regenerate_verify_token_settings_path, method: :post, class: "text-sm text-[#b7c7bb]", form: { data: { turbo_confirm: "Replace the verify token? Update Meta afterwards." } } %>
+        </div>
+      </div>
+    </div>
+    <p class="text-xs leading-relaxed text-[#6d645b]">Set META_APP_SECRET in the environment so Marquee can check the X-Hub-Signature-256 header. Without it, signature checks are skipped outside production.</p>
+  </aside>
+</div>

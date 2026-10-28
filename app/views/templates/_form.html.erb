@@ -1,0 +1,115 @@
+<%= render "shared/errors", record: template %>
+
+<%= form_with model: template, class: "grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_320px]", data: { controller: "template-preview" } do |form| %>
+  <div class="space-y-6">
+    <div class="rounded-3xl bg-white p-5 ring-1 ring-[#e4dccf] sm:p-6">
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div class="sm:col-span-2">
+          <%= form.label :name, "Template name", class: label_class %>
+          <%= form.text_field :name, required: true, placeholder: "order_ready", class: field_class, pattern: "[a-z0-9_]+" %>
+          <p class="mt-1 text-xs text-[#6d645b]">Lowercase letters, numbers, and underscores. Meta uses this name when you send.</p>
+        </div>
+        <div>
+          <%= form.label :language, class: label_class %>
+          <%= form.select :language, ::Template::LANGUAGES.map { |code, name| [name, code] }, {}, class: field_class %>
+        </div>
+        <div>
+          <%= form.label :category, class: label_class %>
+          <%= form.select :category, ::Template::CATEGORIES.map { |category| [category.humanize, category] }, {}, class: field_class %>
+        </div>
+      </div>
+      <ul class="mt-4 space-y-1 text-xs leading-relaxed text-[#6d645b]">
+        <li>Marketing — offers, announcements, re-engagement.</li>
+        <li>Utility — orders, receipts, and account updates the customer already expects.</li>
+        <li>Authentication — one-time passwords. Meta is strict about this shape.</li>
+      </ul>
+    </div>
+
+    <div class="rounded-3xl bg-white p-5 ring-1 ring-[#e4dccf] sm:p-6">
+      <div class="flex items-center justify-between gap-3">
+        <%= form.label :header_text, "Header", class: label_class %>
+        <button type="button" class="text-sm font-medium text-[#1f7a45]" data-action="template-preview#insertVariable" data-template-preview-field-param="header">Add variable</button>
+      </div>
+      <%= form.text_field :header_text, maxlength: 60, placeholder: "Northwind Grocery", class: field_class, data: { template_preview_target: "header", action: "input->template-preview#render" } %>
+      <p class="mt-1 text-xs text-[#6d645b]">Optional. 60 characters, and at most one variable. Do not start or end with it.</p>
+
+      <div class="mt-5 flex items-center justify-between gap-3">
+        <%= form.label :body, "Body", class: label_class %>
+        <div class="flex items-center gap-3">
+          <span class="text-xs text-[#6d645b]" data-template-preview-target="count">0 / 1024</span>
+          <button type="button" class="text-sm font-medium text-[#1f7a45]" data-action="template-preview#insertVariable" data-template-preview-field-param="body">Add variable</button>
+        </div>
+      </div>
+      <%= form.text_area :body, rows: 6, required: true, maxlength: 1024, class: field_class, placeholder: "Hi {{1}}, your order {{2}} is packed and waiting at the counter.", data: { template_preview_target: "body", action: "input->template-preview#render" } %>
+      <p class="mt-1 text-xs text-[#6d645b]">Variables must run {{1}}, {{2}}, {{3}} with no gaps. Keep real words around them.</p>
+
+      <%= form.label :footer_text, "Footer", class: "#{label_class} mt-5" %>
+      <%= form.text_field :footer_text, maxlength: 60, placeholder: "Reply here if you need a later slot.", class: field_class, data: { template_preview_target: "footer", action: "input->template-preview#render" } %>
+      <p class="mt-1 text-xs text-[#6d645b]">Optional. 60 characters. No variables.</p>
+    </div>
+
+    <div class="rounded-3xl bg-white p-5 ring-1 ring-[#e4dccf] sm:p-6">
+      <h2 class="font-medium">Buttons</h2>
+      <p class="mt-1 text-sm text-[#6d645b]">Up to three. If you mix quick replies with links, keep the quick replies together at the start or the end. A link may end with {{1}}.</p>
+      <div class="mt-4 space-y-4">
+        <% 3.times do |index| %>
+          <% button = template.buttons[index] || {} %>
+          <fieldset data-button-row class="rounded-2xl bg-[#fbf8f3] p-4">
+            <legend class="text-xs font-medium uppercase tracking-wide text-[#6d645b]">Button <%= index + 1 %></legend>
+            <div class="mt-3 grid gap-3 sm:grid-cols-2">
+              <label class="block text-sm">
+                Type
+                <select name="template[buttons][<%= index %>][type]" data-button-type data-action="change->template-preview#render" class="<%= field_class %>">
+                  <option value="">None</option>
+                  <% %w[QUICK_REPLY URL PHONE_NUMBER].each do |type| %>
+                    <option value="<%= type %>" <%= "selected" if button["type"] == type %>><%= type.humanize %></option>
+                  <% end %>
+                </select>
+              </label>
+              <label class="block text-sm">
+                Label
+                <input name="template[buttons][<%= index %>][text]" value="<%= button["text"] %>" maxlength="25" data-button-text data-action="input->template-preview#render" class="<%= field_class %>" placeholder="Track order">
+              </label>
+              <label class="block text-sm sm:col-span-2">
+                Link or phone
+                <input name="template[buttons][<%= index %>][url]" value="<%= button["url"] %>" data-button-url data-action="input->template-preview#render" class="<%= field_class %>" placeholder="https://northwind.example/orders/{{1}}">
+              </label>
+              <label class="block text-sm sm:col-span-2">
+                Phone number
+                <input name="template[buttons][<%= index %>][phone_number]" value="<%= button["phone_number"] %>" class="<%= field_class %>" placeholder="+913340002210">
+              </label>
+            </div>
+          </fieldset>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="rounded-3xl bg-white p-5 ring-1 ring-[#e4dccf] sm:p-6">
+      <h2 class="font-medium">Samples for Meta</h2>
+      <p class="mt-1 text-sm text-[#6d645b]">Reviewers need an example of every variable. These samples are not sent to customers.</p>
+      <div class="mt-4 space-y-3" data-template-preview-target="examples"></div>
+      <script type="application/json" data-template-preview-target="initial"><%= json_escape(template.example_values.to_json).html_safe %></script>
+    </div>
+
+    <div class="flex flex-wrap gap-2">
+      <%= form.submit template.persisted? ? "Save draft" : "Save draft", class: btn_primary, data: { turbo_submits_with: "Saving…" } %>
+      <%= link_to "Cancel", template.persisted? ? template : templates_path, class: btn_secondary %>
+    </div>
+  </div>
+
+  <aside class="lg:sticky lg:top-8">
+    <div class="rounded-[2rem] bg-[#14241c] p-3">
+      <div class="overflow-hidden rounded-[1.5rem] bg-[#efeae2]">
+        <div class="bg-[#075e54] px-4 py-3 text-sm text-white">Live preview</div>
+        <div class="min-h-[320px] px-3 py-4">
+          <div class="max-w-[95%] rounded-lg rounded-tl-none bg-white px-3 py-2 text-[13px] leading-snug shadow-sm">
+            <p class="mb-1 font-semibold" data-template-preview-target="previewHeader"></p>
+            <div data-template-preview-target="previewBody" class="whitespace-pre-wrap text-[#8a8175]">The message appears here.</div>
+            <p class="mt-2 text-[11px] text-[#6d645b]" data-template-preview-target="previewFooter"></p>
+            <div data-template-preview-target="previewButtons"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </aside>
+<% end %>

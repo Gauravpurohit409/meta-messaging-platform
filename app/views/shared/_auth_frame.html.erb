@@ -1,0 +1,21 @@
+<div class="grid min-h-screen lg:grid-cols-[minmax(0,1.1fr)_minmax(320px,480px)]">
+  <section class="hidden bg-[#14241c] px-10 py-12 text-[#f4f0e6] lg:flex lg:flex-col lg:justify-between">
+    <div>
+      <%= link_to "Marquee", root_path, class: "font-serif text-4xl" %>
+      <p class="mt-10 max-w-md font-serif text-5xl leading-[1.05]">Write it once. Get it approved. Send it to people who opted in.</p>
+    </div>
+    <p class="max-w-sm text-sm leading-relaxed text-[#c9d7cc]">Templates go to Meta for review. Campaigns use only the ones that come back approved.</p>
+  </section>
+  <section class="flex items-center justify-center px-5 py-12">
+    <div class="w-full max-w-md">
+      <%= link_to "Marquee", root_path, class: "font-serif text-3xl lg:hidden" %>
+      <h1 class="mt-6 font-serif text-4xl tracking-tight"><%= title %></h1>
+      <% if local_assigns[:lede].present? %>
+        <p class="mt-3 text-[#5c564e]"><%= lede %></p>
+      <% end %>
+      <div class="mt-8">
+        <%= yield %>
+      </div>
+    </div>
+  </section>
+</div>

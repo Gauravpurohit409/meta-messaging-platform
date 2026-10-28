@@ -1,0 +1,23 @@
+<div id="template_status_panel" class="rounded-3xl bg-white p-5 ring-1 ring-[#e4dccf]">
+  <div class="flex flex-wrap items-center gap-3">
+    <%= status_pill(template.status) %>
+    <p class="text-sm text-[#6d645b]">
+      <% if template.meta_template_id.present? %>
+        Meta id <%= template.meta_template_id %>
+      <% else %>
+        Not submitted yet
+      <% end %>
+    </p>
+  </div>
+
+  <% if template.rejection_reason.present? %>
+    <p class="mt-4 rounded-2xl bg-[#fff5f2] px-4 py-3 text-sm leading-relaxed text-[#7a2a22]"><%= template.rejection_reason %></p>
+  <% elsif template.pending? %>
+    <p class="mt-4 text-sm leading-relaxed text-[#5c564e]">Meta is reviewing this. A decision usually lands within a day. This page updates on its own when the webhook arrives.</p>
+  <% elsif template.approved? %>
+    <p class="mt-4 text-sm leading-relaxed text-[#5c564e]">Approved <%= stamp(template.approved_at) %>. It can be used in a campaign.</p>
+    <%= link_to "Start a campaign", new_campaign_path(template_id: template.id), class: "#{btn_primary} mt-4" %>
+  <% else %>
+    <p class="mt-4 text-sm leading-relaxed text-[#5c564e]">Drafts stay private until you submit them. Add a realistic sample for every variable — Meta rejects templates that omit samples.</p>
+  <% end %>
+</div>

@@ -1,0 +1,46 @@
+<% content_for :title, "#{@campaign.name} — Marquee" %>
+<% content_for :heading, @campaign.name %>
+<% content_for :subheading, "#{@campaign.template.name} · #{pluralize(@campaign.total_recipients, "recipient")}" %>
+<% content_for :actions do %>
+  <%= link_to "Template", @campaign.template, class: btn_secondary %>
+  <% if @campaign.draft? %>
+    <%= button_to "Delete draft", @campaign, method: :delete, class: btn_danger, form: { data: { turbo_confirm: "Delete this draft campaign?" } } %>
+  <% end %>
+<% end %>
+
+<%= turbo_stream_from @campaign %>
+<%= render "shared/errors", record: @campaign %>
+<%= render "campaigns/stats", campaign: @campaign %>
+
+<% if @campaign.draft? %>
+  <%= form_with url: launch_campaign_path(@campaign), method: :post, class: "mt-5 rounded-3xl bg-white p-5 ring-1 ring-[#e4dccf] sm:p-6" do %>
+    <h2 class="font-medium">Launch</h2>
+    <p class="mt-1 text-sm leading-relaxed text-[#5c564e]">Leave the time empty to send now. Sidekiq paces the send so it stays under WhatsApp's throughput.</p>
+    <% if current_user.whatsapp_account.demo_mode? %>
+      <p class="mt-2 text-sm text-[#6d645b]">Demo rule: numbers ending in 0000 fail delivery. Everyone else is marked delivered a moment later.</p>
+    <% end %>
+    <label class="mt-4 block text-sm">
+      Schedule for later
+      <input type="datetime-local" name="scheduled_at" class="<%= field_class %> sm:max-w-xs">
+    </label>
+    <%= submit_tag "Launch campaign", class: "#{btn_primary} mt-4", data: { turbo_confirm: "Send this template to #{@campaign.total_recipients} people?", turbo_submits_with: "Launching…" } %>
+  <% end %>
+<% elsif @campaign.scheduled? %>
+  <%= button_to "Clear schedule", cancel_campaign_path(@campaign), method: :post, class: "#{btn_secondary} mt-5" %>
+<% end %>
+
+<div class="mt-5 overflow-x-auto rounded-3xl bg-white ring-1 ring-[#e4dccf]">
+  <table class="min-w-full text-left text-sm">
+    <thead class="text-xs uppercase tracking-wide text-[#6d645b]">
+      <tr>
+        <th class="px-4 py-3 font-medium">Phone</th>
+        <th class="px-4 py-3 font-medium">Status</th>
+        <th class="px-4 py-3 font-medium">Variables</th>
+        <th class="px-4 py-3 font-medium">Error</th>
+      </tr>
+    </thead>
+    <tbody>
+      <%= render partial: "campaigns/recipient", collection: @recipients, as: :recipient %>
+    </tbody>
+  </table>
+</div>

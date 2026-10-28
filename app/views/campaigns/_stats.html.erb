@@ -1,0 +1,37 @@
+<% total = [campaign.total_recipients, 1].max %>
+<% finished = campaign.dispatched_count %>
+<% width = [(finished * 100.0 / total), 100].min %>
+<div id="campaign_stats" class="rounded-3xl bg-white p-5 ring-1 ring-[#e4dccf] sm:p-6">
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <%= status_pill(campaign.status) %>
+    <p class="text-sm text-[#6d645b]"><%= finished %> of <%= campaign.total_recipients %> left the queue</p>
+  </div>
+  <div class="mt-4 h-2 overflow-hidden rounded-full bg-[#efe8da]">
+    <div class="h-2 rounded-full bg-[#1f7a45]" style="width: <%= width %>%"></div>
+  </div>
+  <dl class="mt-5 grid grid-cols-2 gap-4 sm:grid-cols-4">
+    <div>
+      <dt class="text-xs uppercase tracking-wide text-[#6d645b]">Sent</dt>
+      <dd class="mt-1 font-serif text-3xl"><%= campaign.sent_count %></dd>
+    </div>
+    <div>
+      <dt class="text-xs uppercase tracking-wide text-[#6d645b]">Delivered</dt>
+      <dd class="mt-1 font-serif text-3xl"><%= campaign.delivered_count %></dd>
+    </div>
+    <div>
+      <dt class="text-xs uppercase tracking-wide text-[#6d645b]">Read</dt>
+      <dd class="mt-1 font-serif text-3xl"><%= campaign.read_count %></dd>
+    </div>
+    <div>
+      <dt class="text-xs uppercase tracking-wide text-[#6d645b]">Failed</dt>
+      <dd class="mt-1 font-serif text-3xl"><%= campaign.failed_count %></dd>
+    </div>
+  </dl>
+  <% if campaign.failure_reason.present? %>
+    <p class="mt-4 text-sm text-[#7a2a22]"><%= campaign.failure_reason %></p>
+  <% elsif campaign.scheduled? %>
+    <p class="mt-4 text-sm text-[#5c564e]">Sends <%= stamp(campaign.scheduled_at) %>.</p>
+  <% elsif campaign.running? %>
+    <p class="mt-4 text-sm text-[#5c564e]">Sending now. This board updates as each message settles.</p>
+  <% end %>
+</div>

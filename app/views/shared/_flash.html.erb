@@ -1,0 +1,10 @@
+<% messages = [notice, alert].compact_blank.uniq %>
+<% if messages.any? %>
+  <div class="pointer-events-none fixed inset-x-0 top-4 z-50 flex justify-center px-4">
+    <% messages.each do |message| %>
+      <div class="pointer-events-auto max-w-lg rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-lg <%= message == alert ? "bg-[#3d1c1c] text-white" : "bg-[#14241c] text-white" %>">
+        <%= message %>
+      </div>
+    <% end %>
+  </div>
+<% end %>
