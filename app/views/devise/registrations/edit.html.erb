@@ -1,0 +1,25 @@
+<% content_for :title, "Account — Marquee" %>
+<% content_for :heading, "Account" %>
+<% content_for :subheading, "The name on the desk, and the password that opens it." %>
+
+<div class="max-w-xl rounded-3xl bg-white p-5 ring-1 ring-[#e4dccf] sm:p-6">
+  <%= form_for(resource, as: resource_name, url: registration_path(resource_name), html: { method: :put }) do |f| %>
+    <%= render "devise/shared/error_messages", resource: resource %>
+    <div class="space-y-4">
+      <%= f.label :name, "Your name", class: label_class %>
+      <%= f.text_field :name, required: true, class: field_class %>
+      <%= f.label :company, "Business", class: label_class %>
+      <%= f.text_field :company, class: field_class %>
+      <%= f.label :email, class: label_class %>
+      <%= f.email_field :email, autocomplete: "email", required: true, class: field_class %>
+      <%= f.label :password, "New password", class: label_class %>
+      <%= f.password_field :password, autocomplete: "new-password", class: field_class %>
+      <p class="-mt-2 text-xs text-[#6d645b]">Leave the password blank to keep the current one.</p>
+      <%= f.label :password_confirmation, "Confirm new password", class: label_class %>
+      <%= f.password_field :password_confirmation, autocomplete: "new-password", class: field_class %>
+      <%= f.label :current_password, class: label_class %>
+      <%= f.password_field :current_password, autocomplete: "current-password", required: true, class: field_class %>
+      <%= f.submit "Save account", class: btn_primary %>
+    </div>
+  <% end %>
+</div>

@@ -1,0 +1,13 @@
+<tr id="<%= dom_id(recipient) %>" class="border-t border-[#efe8da]">
+  <td class="px-4 py-3 font-medium"><%= recipient.phone_number %></td>
+  <td class="px-4 py-3"><%= status_pill(recipient.status) %></td>
+  <td class="px-4 py-3 text-sm text-[#5c564e]">
+    <% details = recipient.parameters.presence || {} %>
+    <% if details.any? %>
+      <%= details.map { |key, value| "#{key}: #{value}" }.join(" · ") %>
+    <% else %>
+      Shared samples
+    <% end %>
+  </td>
+  <td class="px-4 py-3 text-sm text-[#7a2a22]"><%= recipient.error_message %></td>
+</tr>

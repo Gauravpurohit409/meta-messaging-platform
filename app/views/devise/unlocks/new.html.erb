@@ -1,0 +1,5 @@
+<% content_for :unframed, "true" %>
+<% content_for :title, "Unlock — Marquee" %>
+<%= render layout: "shared/auth_frame", locals: { title: "Unlock", lede: "Accounts on this desk do not lock." } do %>
+  <%= render "devise/shared/links" %>
+<% end %>

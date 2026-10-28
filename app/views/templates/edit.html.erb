@@ -1,0 +1,4 @@
+<% content_for :title, "Edit #{@template.name} — Marquee" %>
+<% content_for :heading, "Edit #{@template.name}" %>
+<% content_for :subheading, @template.rejected? ? "Meta rejected the last version. Change the copy, then submit it again." : "This draft has not been sent to Meta." %>
+<%= render "form", template: @template %>

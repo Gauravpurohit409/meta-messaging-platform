@@ -1,0 +1,12 @@
+<% content_for :title, "Reset password — Marquee" %>
+<% content_for :unframed, "true" %>
+
+<%= render layout: "shared/auth_frame", locals: { title: "Reset password", lede: "We will email a link if this address has a desk." } do %>
+  <%= form_for(resource, as: resource_name, url: password_path(resource_name), html: { method: :post }) do |f| %>
+    <%= render "devise/shared/error_messages", resource: resource %>
+    <%= f.label :email, class: label_class %>
+    <%= f.email_field :email, autofocus: true, autocomplete: "email", required: true, class: field_class %>
+    <%= f.submit "Send reset link", class: "#{btn_primary} mt-4 w-full" %>
+  <% end %>
+  <div class="mt-6 text-sm text-[#5c564e]"><%= render "devise/shared/links" %></div>
+<% end %>

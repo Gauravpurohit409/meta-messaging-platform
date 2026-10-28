@@ -1,0 +1,5 @@
+<% content_for :unframed, "true" %>
+<% content_for :title, "Confirmation — Marquee" %>
+<%= render layout: "shared/auth_frame", locals: { title: "Resend confirmation", lede: "This desk does not require email confirmation." } do %>
+  <%= render "devise/shared/links" %>
+<% end %>

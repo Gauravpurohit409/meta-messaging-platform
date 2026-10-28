@@ -1,0 +1,60 @@
+<% content_for :title, "New campaign — Marquee" %>
+<% content_for :heading, "New campaign" %>
+<% content_for :subheading, "Choose an approved template, fill the variables, and add the people who asked to hear from you." %>
+
+<% if @approved_templates.empty? %>
+  <div class="rounded-3xl bg-white px-6 py-12 text-center ring-1 ring-[#e4dccf]">
+    <h2 class="font-serif text-3xl">No approved template yet</h2>
+    <p class="mx-auto mt-3 max-w-md text-sm leading-relaxed text-[#5c564e]">WhatsApp only delivers template campaigns after Meta approves the copy. Submit a template and wait for the green status.</p>
+    <%= link_to "Go to templates", templates_path, class: "#{btn_primary} mt-6" %>
+  </div>
+<% else %>
+  <%= render "shared/errors", record: @campaign %>
+
+  <%= form_with url: new_campaign_path, method: :get, class: "mb-4 rounded-3xl bg-white p-5 ring-1 ring-[#e4dccf]" do %>
+    <label class="<%= label_class %>" for="template_id">Approved template</label>
+    <%= select_tag :template_id, options_from_collection_for_select(@approved_templates, :id, :name, @template&.id), class: field_class, onchange: "this.form.requestSubmit()" %>
+    <p class="mt-2 text-xs text-[#6d645b]">Changing the template reloads the variable fields.</p>
+  <% end %>
+
+  <%= form_with model: @campaign, class: "space-y-5" do |form| %>
+    <%= form.hidden_field :template_id, value: @template.id %>
+    <div class="rounded-3xl bg-white p-5 ring-1 ring-[#e4dccf] sm:p-6">
+      <%= form.label :name, "Campaign name", class: label_class %>
+      <%= form.text_field :name, required: true, class: field_class %>
+    </div>
+
+    <% if @template.required_parameter_keys.any? %>
+      <div class="rounded-3xl bg-white p-5 ring-1 ring-[#e4dccf] sm:p-6">
+        <h2 class="font-medium">Values for everyone</h2>
+        <p class="mt-1 text-sm text-[#6d645b]">Used when a row in the audience does not supply its own. Prefilled from the template samples.</p>
+        <div class="mt-4 grid gap-4 sm:grid-cols-2">
+          <% @template.required_parameter_keys.each do |key| %>
+            <label class="block text-sm">
+              <%= @template.parameter_label(key) %>
+              <input name="default_parameters[<%= key %>]" value="<%= params.dig(:default_parameters, key).presence || @template.example_values[key] %>" class="<%= field_class %>">
+            </label>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+
+    <div class="rounded-3xl bg-white p-5 ring-1 ring-[#e4dccf] sm:p-6">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <h2 class="font-medium">Audience</h2>
+        <%= link_to "Download a sample CSV", sample_campaigns_path(template_id: @template.id), class: "text-sm font-medium text-[#1f7a45]" %>
+      </div>
+      <p class="mt-1 text-sm leading-relaxed text-[#6d645b]">One phone number per line, with country code. Or a CSV whose first column is <span class="font-medium">phone</span><% if @template.required_parameter_keys.any? %> and whose other columns are <%= @template.required_parameter_keys.join(", ") %><% end %>.</p>
+      <%= text_area_tag :audience_text, params[:audience_text], rows: 6, placeholder: "919830001111\n919830002222", class: "#{field_class} font-mono text-sm" %>
+      <label class="mt-4 block text-sm font-medium text-[#3d3832]">
+        Or upload a CSV
+        <input type="file" name="audience_file" accept=".csv,text/csv" class="mt-2 block w-full text-sm">
+      </label>
+    </div>
+
+    <div class="flex flex-wrap gap-2">
+      <%= form.submit "Save draft", class: btn_primary, data: { turbo_submits_with: "Saving…" } %>
+      <%= link_to "Cancel", campaigns_path, class: btn_secondary %>
+    </div>
+  <% end %>
+<% end %>

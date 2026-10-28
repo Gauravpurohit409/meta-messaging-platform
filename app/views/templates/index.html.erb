@@ -1,0 +1,33 @@
+<% content_for :title, "Templates — Marquee" %>
+<% content_for :heading, "Templates" %>
+<% content_for :subheading, "Drafts, reviews, and the approved messages you are allowed to send." %>
+<% content_for :actions do %>
+  <%= link_to "New template", new_template_path, class: btn_primary %>
+<% end %>
+
+<%= turbo_stream_from [current_user, :templates] %>
+
+<div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+  <div class="flex flex-wrap gap-2">
+    <%= link_to "All", templates_path, class: "rounded-full px-3 py-1.5 text-sm #{params[:status].blank? ? "bg-[#14241c] text-white" : "bg-white ring-1 ring-[#e4dccf]"}" %>
+    <% ::Template::STATUSES.first(4).each do |status| %>
+      <%= link_to "#{status.humanize} #{@counts[status].to_i}", templates_path(status: status), class: "rounded-full px-3 py-1.5 text-sm #{params[:status] == status ? "bg-[#14241c] text-white" : "bg-white ring-1 ring-[#e4dccf]"}" %>
+    <% end %>
+  </div>
+  <%= form_with url: templates_path, method: :get, class: "flex gap-2" do %>
+    <%= hidden_field_tag :status, params[:status] if params[:status].present? %>
+    <%= text_field_tag :q, params[:q], placeholder: "Search name or copy", class: "w-full rounded-full border border-[#e4dccf] bg-white px-4 py-2 text-sm sm:w-64" %>
+  <% end %>
+</div>
+
+<% if @templates.any? %>
+  <div class="space-y-3">
+    <%= render partial: "templates/row", collection: @templates, as: :template %>
+  </div>
+<% else %>
+  <div class="rounded-3xl bg-white px-6 py-12 text-center ring-1 ring-[#e4dccf]">
+    <h2 class="font-serif text-3xl">Nothing in this tray</h2>
+    <p class="mx-auto mt-3 max-w-md text-sm leading-relaxed text-[#5c564e]">A template is the only message WhatsApp will let you send outside a 24-hour conversation. Start with a utility update, like an order that is ready for pickup.</p>
+    <%= link_to "Write the first template", new_template_path, class: "#{btn_primary} mt-6" %>
+  </div>
+<% end %>
