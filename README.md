@@ -77,6 +77,8 @@ bundle exec rspec
 
 The first deploy migrates and seeds the demo desk (`demo@marquee.test` / `password123`). The health check is `/up`.
 
+`bundle install` prints a Tailwind note that says to pin `tailwindcss-rails` to `~> 3.3.1`. This app is already on Tailwind v4, so leave the gem on 4.x. Asset compilation uses `SECRET_KEY_BASE_DUMMY=1` because the real `SECRET_KEY_BASE` is not required to build CSS and JavaScript.
+
 After the services are up, open the web service URL, sign in, and use Connection when you want live WhatsApp sends. Add `META_APP_SECRET` on the web service before Meta starts posting webhooks. Webhook URL: `https://<your-service>.onrender.com/webhooks/meta`.
 
 Encryption keys and `SECRET_KEY_BASE` are generated once on the web service and copied to the worker. Do not rotate them after tokens have been saved.
