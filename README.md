@@ -64,6 +64,19 @@ Template sends go to `POST /{phone-number-id}/messages` on Graph `v26.0`. Market
 bundle exec rspec
 ```
 
-## Production notes
+## Deploy on Render
 
-The app time zone is Asia/Kolkata. Puma serves the web process and Sidekiq needs its own process (`Procfile`). Set `DATABASE_URL`, `REDIS_URL`, `SECRET_KEY_BASE`, the Active Record encryption keys, and `META_APP_SECRET`. Encryption keys must stay stable or saved tokens cannot be decrypted.
+`render.yaml` is a Render Blueprint. In the [Render dashboard](https://dashboard.render.com), choose **New → Blueprint**, connect this repository, and apply it. Render creates:
+
+| Resource | Plan | Role |
+| --- | --- | --- |
+| `meta-messaging-db` | Free Postgres | App database. Expires 30 days after creation unless you upgrade it. |
+| `meta-messaging-redis` | Free Key Value | Sidekiq and Action Cable. Data is dropped whenever the instance restarts. |
+| `meta-messaging-platform` | Free web | Puma. Sleeps after inactivity. |
+| `meta-messaging-worker` | Starter | Sidekiq. This is a paid service so sends keep running while the web service sleeps. |
+
+The first deploy migrates and seeds the demo desk (`demo@marquee.test` / `password123`). The health check is `/up`.
+
+After the services are up, open the web service URL, sign in, and use Connection when you want live WhatsApp sends. Add `META_APP_SECRET` on the web service before Meta starts posting webhooks. Webhook URL: `https://<your-service>.onrender.com/webhooks/meta`.
+
+Encryption keys and `SECRET_KEY_BASE` are generated once on the web service and copied to the worker. Do not rotate them after tokens have been saved.
