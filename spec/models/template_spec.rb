@@ -25,6 +25,20 @@ RSpec.describe Template, type: :model do
     expect(template.errors.full_messages.join).to include("Body {{1}}")
   end
 
+  it "accepts only the three template types Meta supports" do
+    template = build(:template, category: "UTILITY")
+    expect(template).to be_valid
+
+    %w[MARKETING AUTHENTICATION].each do |category|
+      template.category = category
+      expect(template).to be_valid
+    end
+
+    template.category = "SHIPPING"
+    expect(template).not_to be_valid
+    expect(template.errors[:category]).to be_present
+  end
+
   it "rejects variables in the footer and a second header variable" do
     template = build(:template, footer_text: "Order {{1}}", header_text: "Hi {{1}} and {{2}} today")
     expect(template).not_to be_valid

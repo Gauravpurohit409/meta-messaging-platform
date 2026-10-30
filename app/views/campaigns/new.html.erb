@@ -13,7 +13,7 @@
 
   <%= form_with url: new_campaign_path, method: :get, class: "mb-4 rounded-3xl bg-white p-5 ring-1 ring-[#e4dccf]" do %>
     <label class="<%= label_class %>" for="template_id">Approved template</label>
-    <%= select_tag :template_id, options_from_collection_for_select(@approved_templates, :id, :name, @template&.id), class: field_class, onchange: "this.form.requestSubmit()" %>
+    <%= select_tag :template_id, options_from_collection_for_select(@approved_templates, :id, :campaign_option_label, @template&.id), class: field_class, onchange: "this.form.requestSubmit()" %>
     <p class="mt-2 text-xs text-[#6d645b]">Changing the template reloads the variable fields.</p>
   <% end %>
 

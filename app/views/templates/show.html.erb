@@ -1,6 +1,6 @@
 <% content_for :title, "#{@template.name} — Marquee" %>
 <% content_for :heading, @template.name %>
-<% content_for :subheading, "#{@template.category.humanize} · #{@template.language_name}" %>
+<% content_for :subheading, "#{@template.category_name} · #{@template.language_name}" %>
 <% content_for :actions do %>
   <% if @template.editable? %>
     <%= link_to "Edit", edit_template_path(@template), class: btn_secondary %>
