@@ -385,7 +385,7 @@ DEPENDENCIES
   rubocop-rails-omakase
   sidekiq (~> 8.0)
   stimulus-rails
-  tailwindcss-rails
+  tailwindcss-rails (~> 4.0)
   thruster
   turbo-rails
   tzinfo-data
