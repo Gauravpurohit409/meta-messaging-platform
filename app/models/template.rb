@@ -1,5 +1,19 @@
 class Template < ApplicationRecord
-  CATEGORIES = %w[MARKETING UTILITY AUTHENTICATION].freeze
+  CATEGORY_OPTIONS = {
+    "UTILITY" => {
+      label: "Utility",
+      description: "Orders, receipts, and account updates the customer already expects."
+    },
+    "MARKETING" => {
+      label: "Marketing",
+      description: "Offers, announcements, and re-engagement."
+    },
+    "AUTHENTICATION" => {
+      label: "Authentication",
+      description: "One-time passwords and login codes."
+    }
+  }.freeze
+  CATEGORIES = CATEGORY_OPTIONS.keys.freeze
   STATUSES = %w[draft pending approved rejected paused disabled flagged archived].freeze
   LANGUAGES = {
     "en" => "English",
@@ -77,6 +91,14 @@ class Template < ApplicationRecord
 
   def language_name
     LANGUAGES.fetch(language, language)
+  end
+
+  def category_name
+    CATEGORY_OPTIONS.dig(category, :label) || category.to_s.humanize
+  end
+
+  def campaign_option_label
+    "#{name} · #{category_name}"
   end
 
   def parameter_label(key)

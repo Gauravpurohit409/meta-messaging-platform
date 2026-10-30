@@ -3,8 +3,10 @@ class TemplatesController < ApplicationController
 
   def index
     @status = params[:status].presence_in(Template::STATUSES)
+    @category = params[:category].presence_in(Template::CATEGORIES)
     scope = current_user.templates.order(updated_at: :desc)
     scope = scope.where(status: @status) if @status
+    scope = scope.where(category: @category) if @category
     if params[:q].present?
       query = "%#{ActiveRecord::Base.sanitize_sql_like(params[:q].to_s.strip)}%"
       scope = scope.where("name ILIKE :q OR body ILIKE :q", q: query)

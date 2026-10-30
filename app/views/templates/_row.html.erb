@@ -1,7 +1,7 @@
 <%= link_to template, id: dom_id(template), class: "flex items-start justify-between gap-4 rounded-3xl bg-white px-4 py-4 ring-1 ring-[#e4dccf] transition hover:-translate-y-0.5 sm:px-5" do %>
   <span class="min-w-0">
     <span class="block truncate font-medium"><%= template.name %></span>
-    <span class="mt-1 block text-sm text-[#6d645b]"><%= template.category.humanize %> · <%= template.language_name %></span>
+    <span class="mt-1 block text-sm text-[#6d645b]"><%= template.category_name %> · <%= template.language_name %></span>
     <span class="mt-2 block line-clamp-2 text-sm text-[#3d3832]"><%= template.body %></span>
   </span>
   <%= status_pill(template.status) %>

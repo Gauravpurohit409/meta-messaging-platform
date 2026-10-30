@@ -9,14 +9,22 @@
 
 <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
   <div class="flex flex-wrap gap-2">
-    <%= link_to "All", templates_path, class: "rounded-full px-3 py-1.5 text-sm #{params[:status].blank? ? "bg-[#14241c] text-white" : "bg-white ring-1 ring-[#e4dccf]"}" %>
+    <%= link_to "All", templates_path(category: @category), class: "rounded-full px-3 py-1.5 text-sm #{params[:status].blank? ? "bg-[#14241c] text-white" : "bg-white ring-1 ring-[#e4dccf]"}" %>
     <% ::Template::STATUSES.first(4).each do |status| %>
-      <%= link_to "#{status.humanize} #{@counts[status].to_i}", templates_path(status: status), class: "rounded-full px-3 py-1.5 text-sm #{params[:status] == status ? "bg-[#14241c] text-white" : "bg-white ring-1 ring-[#e4dccf]"}" %>
+      <%= link_to "#{status.humanize} #{@counts[status].to_i}", templates_path(status: status, category: @category), class: "rounded-full px-3 py-1.5 text-sm #{params[:status] == status ? "bg-[#14241c] text-white" : "bg-white ring-1 ring-[#e4dccf]"}" %>
     <% end %>
   </div>
   <%= form_with url: templates_path, method: :get, class: "flex gap-2" do %>
     <%= hidden_field_tag :status, params[:status] if params[:status].present? %>
+    <%= hidden_field_tag :category, @category if @category.present? %>
     <%= text_field_tag :q, params[:q], placeholder: "Search name or copy", class: "w-full rounded-full border border-[#e4dccf] bg-white px-4 py-2 text-sm sm:w-64" %>
+  <% end %>
+</div>
+
+<div class="mb-5 flex flex-wrap gap-2">
+  <%= link_to "All types", templates_path(status: @status, q: params[:q].presence), class: "rounded-full px-3 py-1.5 text-sm #{@category.blank? ? "bg-[#14241c] text-white" : "bg-white ring-1 ring-[#e4dccf]"}" %>
+  <% ::Template::CATEGORY_OPTIONS.each do |value, option| %>
+    <%= link_to option[:label], templates_path(status: @status, category: value, q: params[:q].presence), class: "rounded-full px-3 py-1.5 text-sm #{@category == value ? "bg-[#14241c] text-white" : "bg-white ring-1 ring-[#e4dccf]"}" %>
   <% end %>
 </div>
 
