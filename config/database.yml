@@ -67,19 +67,12 @@ test:
 #
 #   DATABASE_URL="postgres://myuser:mypass@localhost/somedatabase"
 #
-# If the connection URL is provided in the special DATABASE_URL environment
-# variable, Rails will automatically merge its configuration values on top of
-# the values provided in this file. Alternatively, you can specify a connection
-# URL environment variable explicitly:
-#
-#   production:
-#     url: <%= ENV["MY_APP_DATABASE_URL"] %>
+# Production reads DATABASE_URL directly. Leaving database, username, or
+# password in this file would override that URL and break Render.
 #
 # Read https://guides.rubyonrails.org/configuring.html#configuring-a-database
 # for a full overview on how database connection configuration can be specified.
 #
 production:
   <<: *default
-  database: marquee_production
-  username: marquee
-  password: <%= ENV["MARQUEE_DATABASE_PASSWORD"] %>
+  url: <%= ENV["DATABASE_URL"] %>

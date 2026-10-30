@@ -1,22 +1,35 @@
+# One-click Render deploy.
+# Dashboard → New → Blueprint → this repository.
+#
+# Free Postgres expires 30 days after creation. The Sidekiq worker is the
+# smallest paid plan because Render does not offer free background workers,
+# and a sleeping web service would drop campaign sends.
+
 databases:
   - name: meta-messaging-db
     plan: free
+    region: singapore
     databaseName: marquee_production
     user: marquee
+    ipAllowList: []
 
 services:
-  - type: redis
+  - type: keyvalue
     name: meta-messaging-redis
     plan: free
+    region: singapore
     ipAllowList: []
+    maxmemoryPolicy: noeviction
 
   - type: web
     name: meta-messaging-platform
     runtime: ruby
     plan: free
-    buildCommand: bundle install && bundle exec rails assets:precompile && bundle exec rails db:migrate
+    region: singapore
+    buildCommand: bundle install && bundle exec rails assets:precompile
+    preDeployCommand: bundle exec rails db:migrate db:seed
     startCommand: bundle exec puma -C config/puma.rb
-    healthCheckPath: /
+    healthCheckPath: /up
     envVars:
       - key: DATABASE_URL
         fromDatabase:
@@ -25,34 +38,37 @@ services:
       - key: REDIS_URL
         fromService:
           name: meta-messaging-redis
-          type: redis
+          type: keyvalue
           property: connectionString
       - key: REDIS_URL_CABLE
         fromService:
           name: meta-messaging-redis
-          type: redis
+          type: keyvalue
           property: connectionString
       - key: RAILS_ENV
         value: production
+      - key: RAILS_LOG_LEVEL
+        value: info
+      - key: RAILS_SERVE_STATIC_FILES
+        value: "true"
+      - key: RAILS_MAX_THREADS
+        value: "3"
       - key: SECRET_KEY_BASE
         generateValue: true
       - key: ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY
-        sync: false
+        generateValue: true
       - key: ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY
-        sync: false
+        generateValue: true
       - key: ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT
-        sync: false
+        generateValue: true
       - key: META_GRAPH_VERSION
         value: v26.0
-      - key: META_APP_SECRET
-        sync: false
-      - key: META_VERIFY_TOKEN
-        sync: false
 
   - type: worker
     name: meta-messaging-worker
     runtime: ruby
-    plan: free
+    plan: starter
+    region: singapore
     buildCommand: bundle install
     startCommand: bundle exec sidekiq -C config/sidekiq.yml
     envVars:
@@ -63,17 +79,38 @@ services:
       - key: REDIS_URL
         fromService:
           name: meta-messaging-redis
-          type: redis
+          type: keyvalue
+          property: connectionString
+      - key: REDIS_URL_CABLE
+        fromService:
+          name: meta-messaging-redis
+          type: keyvalue
           property: connectionString
       - key: RAILS_ENV
         value: production
+      - key: RAILS_LOG_LEVEL
+        value: info
+      - key: RAILS_MAX_THREADS
+        value: "3"
       - key: SECRET_KEY_BASE
-        generateValue: true
+        fromService:
+          name: meta-messaging-platform
+          type: web
+          envVarKey: SECRET_KEY_BASE
       - key: ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY
-        sync: false
+        fromService:
+          name: meta-messaging-platform
+          type: web
+          envVarKey: ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY
       - key: ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY
-        sync: false
+        fromService:
+          name: meta-messaging-platform
+          type: web
+          envVarKey: ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY
       - key: ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT
-        sync: false
-      - key: META_APP_SECRET
-        sync: false
+        fromService:
+          name: meta-messaging-platform
+          type: web
+          envVarKey: ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT
+      - key: META_GRAPH_VERSION
+        value: v26.0
