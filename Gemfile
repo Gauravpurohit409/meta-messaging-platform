@@ -16,8 +16,10 @@ gem "importmap-rails"
 gem "turbo-rails"
 # Hotwire's modest JavaScript framework [https://stimulus.hotwired.dev]
 gem "stimulus-rails"
-# Use Tailwind CSS [https://github.com/rails/tailwindcss-rails]
-gem "tailwindcss-rails"
+# Tailwind v4. The stylesheet uses `@import "tailwindcss"`.
+# bundle install prints a note about pinning "~> 3.3.1"; that pin is for apps
+# still on Tailwind v3 and would break this CSS. It is not a build failure.
+gem "tailwindcss-rails", "~> 4.0"
 # Redis backs Sidekiq and Action Cable so campaign workers can update the desk live.
 # Action Cable 8.0 loads the redis gem and rejects 6.x. Sidekiq itself uses redis-client.
 gem "redis", "~> 5.4"

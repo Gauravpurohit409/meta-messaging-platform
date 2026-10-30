@@ -1,6 +1,20 @@
 require "active_support/core_ext/integer/time"
 
 Rails.application.configure do
+  # A blank SECRET_KEY_BASE is still truthy, so Rails raises
+  # "must be a type of String" instead of saying the key is missing.
+  # Asset compilation sets SECRET_KEY_BASE_DUMMY and does not need the real key.
+  secret = ENV["SECRET_KEY_BASE"].to_s.strip
+  config.secret_key_base =
+    if secret.present?
+      secret
+    elsif ENV["SECRET_KEY_BASE_DUMMY"].present?
+      require "securerandom"
+      SecureRandom.hex(64)
+    else
+      raise ArgumentError, "Set SECRET_KEY_BASE to a non-blank string (bin/rails secret)."
+    end
+
   # Settings specified here will take precedence over those in config/application.rb.
 
   # Code is not reloaded between requests.

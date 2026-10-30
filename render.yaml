@@ -26,7 +26,7 @@ services:
     runtime: ruby
     plan: free
     region: singapore
-    buildCommand: bundle install && bundle exec rails assets:precompile
+    buildCommand: bundle install && SECRET_KEY_BASE_DUMMY=1 bundle exec rails assets:precompile
     preDeployCommand: bundle exec rails db:migrate db:seed
     startCommand: bundle exec puma -C config/puma.rb
     healthCheckPath: /up
