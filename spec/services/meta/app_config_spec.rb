@@ -55,11 +55,19 @@ RSpec.describe "Meta::AppConfig" do
       expect(Meta::AppConfig.display_name).to eq("Marquee")
     end
 
-    [ "Meta Desk", "meta-desk", "MARQUEE META", "WhatsApp Campaigns", "whatsapp_desk", "Facebook Shop" ].each do |name|
-      it "rejects \"#{name}\" because Meta's brand names cannot appear in the app name" do
+    [ "Meta Desk", "meta-desk", "MARQUEE META", "WhatsApp Campaigns", "whatsapp_desk", "Facebook Shop", "Meta's Desk", "Marquee for Meta" ].each do |name|
+      it "rejects \"#{name}\" because Meta's brand names cannot appear as a word in the app name" do
         ENV["META_APP_DISPLAY_NAME"] = name
 
         expect { Meta::AppConfig.display_name }.to raise_error(Meta::AppConfig::InvalidDisplayName)
+      end
+    end
+
+    [ "Metaphor Desk", "Metaverse Shop", "Northwind Desk", "Facebookish" ].each do |name|
+      it "accepts \"#{name}\" because the brand name is only part of a longer word" do
+        ENV["META_APP_DISPLAY_NAME"] = name
+
+        expect(Meta::AppConfig.display_name).to eq(name)
       end
     end
   end
