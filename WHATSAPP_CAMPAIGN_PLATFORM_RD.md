@@ -354,7 +354,8 @@ const sendWithRetry = async (payload, maxRetries = 5) => {
 |------------|---------|
 | `whatsapp_business_messaging` | Send/receive messages |
 | `whatsapp_business_management` | Manage templates, numbers |
-| `business_management` | Business account access |
+
+`business_management` is not requested. Meta treats unused permissions as a common App Review rejection reason. The list is defined in `Meta::AppConfig.login_permissions`.
 
 ### System User Token Setup
 
