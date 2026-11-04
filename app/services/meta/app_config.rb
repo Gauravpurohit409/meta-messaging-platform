@@ -3,8 +3,9 @@ module Meta
     class InvalidDisplayName < StandardError; end
 
     DEFAULT_DISPLAY_NAME = "Marquee".freeze
-    LOGIN_PERMISSIONS = %w[whatsapp_business_management whatsapp_business_messaging].freeze
+    LOGIN_PERMISSIONS = %w[whatsapp_business_management whatsapp_business_messaging].map(&:freeze).freeze
     RESERVED_BRAND_PATTERN = /(?<![[:alnum:]])(meta|whatsapp|facebook)(?![[:alnum:]])/i
+    NUMERIC_ID_PATTERN = /\A\d+\z/
 
     class << self
       def login_permissions
@@ -26,16 +27,25 @@ module Meta
         name
       end
 
+      def app_id
+        numeric_setting("META_APP_ID")
+      end
+
+      def embedded_signup_configuration_id
+        numeric_setting("META_EMBEDDED_SIGNUP_CONFIG_ID")
+      end
+
       def embedded_signup_ready?
-        configured?("META_APP_ID") &&
-          configured?("META_EMBEDDED_SIGNUP_CONFIG_ID") &&
-          configured?("META_APP_SECRET")
+        app_id.present? &&
+          embedded_signup_configuration_id.present? &&
+          ENV["META_APP_SECRET"].to_s.strip.present?
       end
 
       private
 
-      def configured?(key)
-        ENV[key].to_s.strip.present?
+      def numeric_setting(key)
+        value = ENV[key].to_s.strip
+        value if value.match?(NUMERIC_ID_PATTERN)
       end
     end
   end
