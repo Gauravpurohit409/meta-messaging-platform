@@ -1,4 +1,5 @@
 require "rails_helper"
+require "open3"
 
 RSpec.describe Meta::AppConfig do
   let(:config_keys) { %w[META_APP_ID META_EMBEDDED_SIGNUP_CONFIG_ID META_APP_SECRET META_APP_DISPLAY_NAME] }
@@ -194,16 +195,23 @@ RSpec.describe Meta::AppConfig do
   end
 
   describe "boot check" do
-    let(:initializer) { Rails.root.join("config/initializers/meta_app_config.rb") }
-
-    it "fails at boot when META_APP_DISPLAY_NAME uses a Meta brand word" do
-      ENV["META_APP_DISPLAY_NAME"] = "Meta Desk"
-
-      expect { load initializer }.to raise_error(described_class::InvalidDisplayName)
+    def boot_app(display_name)
+      env = { "RAILS_ENV" => "test", "META_APP_DISPLAY_NAME" => display_name }
+      Open3.capture3(env, "bin/rails", "runner", "puts :booted", chdir: Rails.root.to_s)
     end
 
-    it "boots cleanly with the default display name" do
-      expect { load initializer }.not_to raise_error
+    it "stops the app from booting when META_APP_DISPLAY_NAME uses a Meta brand word" do
+      _stdout, stderr, status = boot_app("Meta Desk")
+
+      expect(status).not_to be_success
+      expect(stderr).to include("InvalidDisplayName")
+    end
+
+    it "boots cleanly with a valid display name" do
+      stdout, _stderr, status = boot_app("Northwind Desk")
+
+      expect(status).to be_success
+      expect(stdout).to include("booted")
     end
   end
 end
