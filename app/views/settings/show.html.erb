@@ -1,4 +1,4 @@
-<% content_for :title, "Connection — Marquee" %>
+<% content_for :title, "Connection — #{app_name}" %>
 <% content_for :heading, "Connection" %>
 <% content_for :subheading, "Demo mode lets you rehearse the whole desk. Live mode calls the WhatsApp Cloud API with your system user token." %>
 
@@ -52,6 +52,6 @@
         </div>
       </div>
     </div>
-    <p class="text-xs leading-relaxed text-[#6d645b]">Set META_APP_SECRET in the environment so Marquee can check the X-Hub-Signature-256 header. Without it, signature checks are skipped outside production.</p>
+    <p class="text-xs leading-relaxed text-[#6d645b]">Set META_APP_SECRET in the environment so <%= app_name %> can check the X-Hub-Signature-256 header. Without it, signature checks are skipped outside production.</p>
   </aside>
 </div>

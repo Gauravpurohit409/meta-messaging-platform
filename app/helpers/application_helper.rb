@@ -1,4 +1,8 @@
 module ApplicationHelper
+  def app_name
+    Meta::AppConfig.display_name
+  end
+
   def field_class
     "mt-1 w-full rounded-xl border border-[#e4dccf] bg-white px-3 py-2.5 text-[15px] text-[#1c1915] outline-none ring-[#1f7a45] placeholder:text-[#a39b90] focus:ring-2"
   end

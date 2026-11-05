@@ -1,4 +1,4 @@
-<% content_for :title, "#{@campaign.name} — Marquee" %>
+<% content_for :title, "#{@campaign.name} — #{app_name}" %>
 <% content_for :heading, @campaign.name %>
 <% content_for :subheading, "#{@campaign.template.name} · #{pluralize(@campaign.total_recipients, "recipient")}" %>
 <% content_for :actions do %>
