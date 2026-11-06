@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_10_28_102000) do
+ActiveRecord::Schema[8.0].define(version: 2026_11_06_123000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -110,7 +110,18 @@ ActiveRecord::Schema[8.0].define(version: 2026_10_28_102000) do
     t.boolean "demo_mode", default: true, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "business_name"
+    t.string "quality_rating"
+    t.string "messaging_limit"
+    t.string "pin_phone_number_id"
+    t.text "registration_pin"
+    t.text "policy_notice"
+    t.datetime "connected_at"
+    t.boolean "restricted", default: false, null: false
+    t.boolean "reconnect_required", default: false, null: false
+    t.index ["phone_number_id"], name: "index_whatsapp_accounts_on_phone_number_id", unique: true
     t.index ["user_id"], name: "index_whatsapp_accounts_on_user_id", unique: true
+    t.index ["waba_id"], name: "index_whatsapp_accounts_on_waba_id", unique: true
   end
 
   add_foreign_key "campaign_recipients", "campaigns"

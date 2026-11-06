@@ -22,7 +22,8 @@ Rails.application.routes.draw do
   end
 
   resource :settings, only: %i[show update] do
-    post :regenerate_verify_token
+    post :embedded_signup, action: :connect
+    delete :embedded_signup, action: :disconnect
   end
 
   namespace :webhooks do

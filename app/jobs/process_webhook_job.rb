@@ -6,6 +6,8 @@ class ProcessWebhookJob < ApplicationJob
       Templates::ApplyStatus.call(event.payload)
     when "messages"
       Campaigns::ApplyMessageStatus.call(event.payload)
+    when "account_update"
+      Accounts::ApplyAccountUpdate.call(event.payload)
     end
     event.update!(processed: true, error_message: nil)
   rescue StandardError => error

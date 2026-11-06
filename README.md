@@ -50,11 +50,13 @@ redis-server --daemonize yes
 
 ## Connect Meta for real
 
-1. Create a Meta app with the WhatsApp use case and a system user token that does not expire.
-2. In Marquee, open Connection, turn demo mode off, and save the WABA id, phone number id, and token.
-3. In the Meta app, set the webhook callback to `https://your-host/webhooks/meta` and paste the verify token shown on the Connection page.
-4. Subscribe to `message_template_status_update` and `messages`.
-5. Set `META_APP_SECRET` so Marquee can check `X-Hub-Signature-256`. Outside production, a missing secret skips that check.
+1. Create a Meta app with the WhatsApp use case and finish business verification.
+2. Create a Facebook Login for Business configuration for Embedded Signup. Set `META_APP_ID`, `META_APP_SECRET`, and `META_EMBEDDED_SIGNUP_CONFIG_ID`.
+3. In the Meta app, set the webhook callback to `https://your-host/webhooks/meta` and set the verify token to the same value as `META_VERIFY_TOKEN`.
+4. Subscribe to `message_template_status_update`, `messages`, and `account_update`.
+5. A business opens Connection and chooses Connect with Meta. Embedded Signup returns a code, and Marquee exchanges it, subscribes to the WhatsApp account, and registers the phone number.
+
+Demo mode can still store a token for rehearsal. It does not call Meta.
 
 Template sends go to `POST /{phone-number-id}/messages` on Graph `v26.0`. Marketing-only features of the Marketing Messages API are not wired up yet.
 

@@ -80,7 +80,10 @@ RSpec.describe "Meta::EmbeddedSignup" do
         stub_register(stubs, "222")
         stub_waba(stubs, "111", "name" => "Northwind")
         stub_phone(stubs, "222", "display_phone_number" => "+1 555 0100")
-        stubs.delete(%r{/subscribed_apps\z}) { [ 200, json_headers, { "success" => true }.to_json ] }
+        stubs.delete(%r{/subscribed_apps\z}) do |env|
+          record(env)
+          [ 200, json_headers, { "success" => true }.to_json ]
+        end
       end
       expect(connect).to be(true)
       pin = account.reload.registration_pin
@@ -284,7 +287,10 @@ RSpec.describe "Meta::EmbeddedSignup" do
         pin_phone_number_id: "222"
       )
       requests = stub_graph do |stubs|
-        stubs.delete(%r{/subscribed_apps\z}) { [ 200, json_headers, { "success" => true }.to_json ] }
+        stubs.delete(%r{/subscribed_apps\z}) do |env|
+          record(env)
+          [ 200, json_headers, { "success" => true }.to_json ]
+        end
       end
 
       expect(Meta::EmbeddedSignup.disconnect(account)).to be(true)
@@ -390,7 +396,9 @@ RSpec.describe "Meta::EmbeddedSignup" do
   end
 
   def parsed_body(env)
-    body = env.body
+    # Faraday::Env#body switches to the response once a status is set.
+    # The register assertions are about the payload we sent.
+    body = env.request_body
     body = JSON.parse(body) if body.is_a?(String) && body.present?
     body.to_h.stringify_keys
   end

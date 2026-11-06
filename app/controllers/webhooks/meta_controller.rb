@@ -7,10 +7,10 @@ module Webhooks
       mode = params["hub.mode"]
       token = params["hub.verify_token"].to_s
       challenge = params["hub.challenge"]
-      verified = mode == "subscribe" && token.present? && (
-        (ENV["META_VERIFY_TOKEN"].present? && token == ENV["META_VERIFY_TOKEN"]) ||
-        WhatsappAccount.exists?(verify_token: token)
-      )
+      expected = ENV["META_VERIFY_TOKEN"].to_s
+      verified = mode == "subscribe" && token.present? && expected.present? &&
+        token.bytesize == expected.bytesize &&
+        ActiveSupport::SecurityUtils.secure_compare(token, expected)
 
       if verified
         render plain: challenge

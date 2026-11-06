@@ -8,6 +8,11 @@ class SendMessageJob < ApplicationJob
 
     campaign = recipient.campaign
     account = campaign.user.whatsapp_account
+    if account&.restricted?
+      recipient.mark_failed!(code: nil, message: "This WhatsApp account is restricted")
+      return
+    end
+
     result = Meta::Client.new(account).send_template_message(
       to: recipient.phone_number,
       template: campaign.template,
@@ -18,6 +23,9 @@ class SendMessageJob < ApplicationJob
   rescue Meta::Client::RateLimitError
     raise
   rescue Meta::Client::Error => error
+    if error.code.to_s == "190"
+      recipient.campaign.user.whatsapp_account.update!(reconnect_required: true)
+    end
     recipient.mark_failed!(code: error.code, message: error.message)
   end
 end
