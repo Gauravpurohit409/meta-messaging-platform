@@ -88,36 +88,128 @@ RSpec.describe "Meta webhook", type: :request do
     expect(kept.access_token).to eq("kept-token")
   end
 
-  %w[PARTNER_REMOVED ACCOUNT_DELETED].each do |event|
-    it "disconnects the desk on #{event}" do
-      account = live_account(waba_id: "111", phone_number_id: "222", access_token: "tok")
-
-      post_webhook(waba_id: "111", field: "account_update", value: { event: event })
-      ProcessWebhookJob.perform_now(WebhookEvent.last.id)
-
-      expect(account.reload.demo_mode).to be(true)
-      expect(account.access_token).to be_nil
-    end
-  end
-
-  %w[ACCOUNT_VIOLATION DISABLED_UPDATE].each do |event|
-    it "stops sends on #{event} and keeps the connection" do
-      account = live_account(waba_id: "111", phone_number_id: "222", access_token: "tok")
-
-      post_webhook(waba_id: "111", field: "account_update", value: { event: event })
-      ProcessWebhookJob.perform_now(WebhookEvent.last.id)
-
-      expect(account.reload.restricted).to be(true)
-      expect(account.live?).to be(false)
-      expect(account.access_token).to eq("tok")
-      expect(account.demo_mode).to be(false)
-    end
-  end
-
-  it "matches an account_update that names the WABA inside the value" do
+  it "disconnects the desk when the WABA is deleted" do
     account = live_account(waba_id: "111", phone_number_id: "222", access_token: "tok")
 
-    post_webhook(waba_id: "other-entry", field: "account_update", value: { event: "ACCOUNT_DELETED", waba_id: "111" })
+    post_webhook(waba_id: "111", field: "account_update", value: { event: "ACCOUNT_DELETED" })
+    ProcessWebhookJob.perform_now(WebhookEvent.last.id)
+
+    expect(account.reload.demo_mode).to be(true)
+    expect(account.access_token).to be_nil
+    expect(account.phone_number_id).to be_nil
+    expect(account.pin_phone_number_id).to eq("222")
+  end
+
+  it "does not disconnect a desk when a solution partner is removed" do
+    account = live_account(waba_id: "111", phone_number_id: "222", access_token: "tok")
+
+    post_webhook(waba_id: "111", field: "account_update", value: { event: "PARTNER_REMOVED" })
+    ProcessWebhookJob.perform_now(WebhookEvent.last.id)
+
+    expect(account.reload.demo_mode).to be(false)
+    expect(account.access_token).to eq("tok")
+    expect(account.restricted).to be(false)
+  end
+
+  it "stops sends when Meta disables the WABA and keeps the token" do
+    account = live_account(waba_id: "111", phone_number_id: "222", access_token: "tok")
+
+    post_webhook(waba_id: "111", field: "account_update", value: {
+      event: "DISABLED_UPDATE",
+      ban_info: { waba_ban_state: "DISABLE" }
+    })
+    ProcessWebhookJob.perform_now(WebhookEvent.last.id)
+
+    expect(account.reload.restricted).to be(true)
+    expect(account.live?).to be(false)
+    expect(account.access_token).to eq("tok")
+    expect(account.demo_mode).to be(false)
+  end
+
+  it "stops sends on a messaging restriction and keeps the token" do
+    account = live_account(waba_id: "111", phone_number_id: "222", access_token: "tok")
+
+    post_webhook(waba_id: "111", field: "account_update", value: {
+      event: "ACCOUNT_RESTRICTION",
+      restriction_info: [ { restriction_type: "RESTRICTED_BIZ_INITIATED_MESSAGING" } ]
+    })
+    ProcessWebhookJob.perform_now(WebhookEvent.last.id)
+
+    expect(account.reload.restricted).to be(true)
+    expect(account.live?).to be(false)
+    expect(account.access_token).to eq("tok")
+  end
+
+  it "stops sends when the number is offboarded and keeps the connection" do
+    account = live_account(waba_id: "111", phone_number_id: "222", access_token: "tok")
+
+    post_webhook(waba_id: "111", field: "account_update", value: { event: "ACCOUNT_OFFBOARDED" })
+    ProcessWebhookJob.perform_now(WebhookEvent.last.id)
+
+    expect(account.reload.restricted).to be(true)
+    expect(account.live?).to be(false)
+    expect(account.access_token).to eq("tok")
+    expect(account.waba_id).to eq("111")
+  end
+
+  it "lets the desk send again when Meta reinstates it" do
+    account = live_account(waba_id: "111", phone_number_id: "222", access_token: "tok", restricted: true)
+
+    post_webhook(waba_id: "111", field: "account_update", value: {
+      event: "DISABLED_UPDATE",
+      ban_info: { waba_ban_state: "REINSTATE" }
+    })
+    ProcessWebhookJob.perform_now(WebhookEvent.last.id)
+
+    expect(account.reload.restricted).to be(false)
+    expect(account.live?).to be(true)
+    expect(account.access_token).to eq("tok")
+  end
+
+  it "lets the desk send again when the number is reconnected" do
+    account = live_account(waba_id: "111", phone_number_id: "222", access_token: "tok", restricted: true)
+
+    post_webhook(waba_id: "111", field: "account_update", value: { event: "ACCOUNT_RECONNECTED" })
+    ProcessWebhookJob.perform_now(WebhookEvent.last.id)
+
+    expect(account.reload.restricted).to be(false)
+    expect(account.live?).to be(true)
+  end
+
+  it "records a policy warning without stopping sends" do
+    account = live_account(waba_id: "111", phone_number_id: "222", access_token: "tok")
+
+    post_webhook(waba_id: "111", field: "account_update", value: { event: "ACCOUNT_VIOLATION" })
+    ProcessWebhookJob.perform_now(WebhookEvent.last.id)
+
+    expect(account.reload.restricted).to be(false)
+    expect(account.live?).to be(true)
+    expect(account.access_token).to eq("tok")
+    expect(account.policy_notice).to include("ACCOUNT_VIOLATION")
+  end
+
+  it "records a scheduled disable without stopping sends" do
+    account = live_account(waba_id: "111", phone_number_id: "222", access_token: "tok")
+
+    post_webhook(waba_id: "111", field: "account_update", value: {
+      event: "DISABLED_UPDATE",
+      ban_info: { waba_ban_state: "SCHEDULE_FOR_DISABLE" }
+    })
+    ProcessWebhookJob.perform_now(WebhookEvent.last.id)
+
+    expect(account.reload.restricted).to be(false)
+    expect(account.live?).to be(true)
+    expect(account.policy_notice).to include("SCHEDULE_FOR_DISABLE")
+  end
+
+  it "matches a partner event that names the WABA under waba_info" do
+    account = live_account(waba_id: "111", phone_number_id: "222", access_token: "tok")
+
+    post_webhook(
+      waba_id: "other-entry",
+      field: "account_update",
+      value: { event: "PARTNER_APP_UNINSTALLED", waba_info: { waba_id: "111" } }
+    )
     ProcessWebhookJob.perform_now(WebhookEvent.last.id)
 
     expect(account.reload.access_token).to be_nil
@@ -132,6 +224,7 @@ RSpec.describe "Meta webhook", type: :request do
     expect(account.reload.demo_mode).to be(false)
     expect(account.access_token).to eq("tok")
     expect(account.restricted).to be(false)
+    expect(account.policy_notice).to be_blank
   end
 
   it "ignores an account_update for a WABA Marquee does not know" do

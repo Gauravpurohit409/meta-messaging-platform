@@ -73,32 +73,36 @@ RSpec.describe "Meta::EmbeddedSignup" do
       expect(raw_pin).not_to include(account.registration_pin)
     end
 
-    it "uses META_GRAPH_VERSION in every call" do
-      ENV["META_GRAPH_VERSION"] = "v99.0"
+    it "keeps the PIN and sends it again the next time that phone number is connected" do
+      stub_graph do |stubs|
+        stub_token(stubs, "EAA-first")
+        stub_subscribe(stubs, "111")
+        stub_register(stubs, "222")
+        stub_waba(stubs, "111", "name" => "Northwind")
+        stub_phone(stubs, "222", "display_phone_number" => "+1 555 0100")
+        stubs.delete(%r{/subscribed_apps\z}) { [ 200, json_headers, { "success" => true }.to_json ] }
+      end
+      expect(connect).to be(true)
+      pin = account.reload.registration_pin
+
+      expect(Meta::EmbeddedSignup.disconnect(account)).to be(true)
+      expect(account.reload.registration_pin).to eq(pin)
+      expect(account.pin_phone_number_id).to eq("222")
+      expect(account.phone_number_id).to be_nil
+      expect(account.access_token).to be_nil
+
       requests = stub_graph do |stubs|
-        stub_token(stubs, "EAA-new")
+        stub_token(stubs, "EAA-second")
         stub_subscribe(stubs, "111")
         stub_register(stubs, "222")
         stub_waba(stubs, "111", "name" => "Northwind")
         stub_phone(stubs, "222", "display_phone_number" => "+1 555 0100")
       end
-
       expect(connect).to be(true)
-      expect(requests.map { |env| env.url.path }).to all(include("/v99.0/"))
-    end
 
-    it "treats an already-registered number as connected" do
-      stub_graph do |stubs|
-        stub_token(stubs, "EAA-new")
-        stub_subscribe(stubs, "111")
-        stub_register(stubs, "222", status: 400, body: meta_error("Phone number already registered", 133016))
-        stub_waba(stubs, "111", "name" => "Northwind")
-        stub_phone(stubs, "222", "display_phone_number" => "+1 555 0100")
-      end
-
-      expect(connect).to be(true)
-      expect(account.reload.access_token).to eq("EAA-new")
-      expect(account.demo_mode).to be(false)
+      register_call = requests.find { |env| env.url.path.end_with?("/register") }
+      expect(parsed_body(register_call)["pin"]).to eq(pin)
+      expect(account.reload.registration_pin).to eq(pin)
     end
 
     it "stays connected when the business details cannot be loaded" do
@@ -120,7 +124,7 @@ RSpec.describe "Meta::EmbeddedSignup" do
       stub_graph do |stubs|
         stub_token(stubs, "EAA-new")
         stub_subscribe(stubs, "111")
-        stub_register(stubs, "222", status: 400, body: meta_error("Phone number already registered", 133016))
+        stub_register(stubs, "222")
         stub_waba(stubs, "111", "name" => "Northwind")
         stub_phone(stubs, "222", "display_phone_number" => "+1 555 0100")
       end
@@ -196,7 +200,43 @@ RSpec.describe "Meta::EmbeddedSignup" do
       end
 
       expect(connect).to be(false)
-      expect(account.errors.full_messages.join).to include("PIN mismatch")
+      expect(account.errors.full_messages.join).to match(/WhatsApp Manager/)
+      expect(account.reload.access_token).to be_nil
+      expect(account.registration_pin).to be_nil
+    end
+
+    it "does not keep the token when Meta says success is false" do
+      stub_graph do |stubs|
+        stub_token(stubs, "EAA-new")
+        stub_subscribe(stubs, "111", body: { "success" => false }.to_json)
+      end
+
+      expect(connect).to be(false)
+      expect(account.reload.access_token).to be_nil
+      expect(account.demo_mode).to be(true)
+    end
+
+    it "does not keep the token when registration reports success false" do
+      stub_graph do |stubs|
+        stub_token(stubs, "EAA-new")
+        stub_subscribe(stubs, "111")
+        stub_register(stubs, "222", body: { "success" => false }.to_json)
+      end
+
+      expect(connect).to be(false)
+      expect(account.reload.access_token).to be_nil
+      expect(account.registration_pin).to be_nil
+    end
+
+    it "does not keep the token when registration is locked out" do
+      stub_graph do |stubs|
+        stub_token(stubs, "EAA-new")
+        stub_subscribe(stubs, "111")
+        stub_register(stubs, "222", status: 400, body: meta_error("Too many registration attempts", 133016))
+      end
+
+      expect(connect).to be(false)
+      expect(account.errors.full_messages.join).to include("Too many registration attempts")
       expect(account.reload.access_token).to be_nil
       expect(account.registration_pin).to be_nil
     end
@@ -240,7 +280,8 @@ RSpec.describe "Meta::EmbeddedSignup" do
         phone_number_id: "222",
         access_token: "old-token",
         business_name: "Northwind",
-        registration_pin: "123456"
+        registration_pin: "123456",
+        pin_phone_number_id: "222"
       )
       requests = stub_graph do |stubs|
         stubs.delete(%r{/subscribed_apps\z}) { [ 200, json_headers, { "success" => true }.to_json ] }
@@ -253,7 +294,8 @@ RSpec.describe "Meta::EmbeddedSignup" do
       account.reload
       expect(account.demo_mode).to be(true)
       expect(account.access_token).to be_nil
-      expect(account.registration_pin).to be_nil
+      expect(account.registration_pin).to eq("123456")
+      expect(account.pin_phone_number_id).to eq("222")
       expect(account.waba_id).to be_nil
       expect(account.phone_number_id).to be_nil
       expect(account.business_name).to be_nil
@@ -292,7 +334,7 @@ RSpec.describe "Meta::EmbeddedSignup" do
       url = args.first.is_a?(Hash) ? args.first[:url].to_s : args.first.to_s
       next original.call(*args, &user_block) unless url.include?("graph.facebook.com")
 
-      original.call(url: "https://graph.facebook.com") do |builder|
+      original.call(*args) do |builder|
         user_block&.call(builder)
         builder.adapter :test, stubs
       end

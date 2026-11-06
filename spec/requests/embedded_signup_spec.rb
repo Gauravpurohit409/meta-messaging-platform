@@ -75,6 +75,31 @@ RSpec.describe "Embedded signup", type: :request do
     expect(Meta::EmbeddedSignup).not_to have_received(:connect)
   end
 
+  it "rejects a signup posted without the authenticity token" do
+    sign_in user
+    ActionController::Base.allow_forgery_protection = true
+
+    post "/settings/embedded_signup", params: valid_signup
+
+    expect(response).to have_http_status(:unprocessable_entity)
+  ensure
+    ActionController::Base.allow_forgery_protection = false
+  end
+
+  it "accepts a signup that includes the authenticity token from the connection page" do
+    sign_in user
+    ActionController::Base.allow_forgery_protection = true
+    get settings_path
+    token = response.body[/name="csrf-token" content="([^"]+)"/, 1]
+    allow(Meta::EmbeddedSignup).to receive(:connect).and_return(true)
+
+    post "/settings/embedded_signup", params: valid_signup.merge(authenticity_token: token)
+
+    expect(response).to redirect_to(settings_path)
+  ensure
+    ActionController::Base.allow_forgery_protection = false
+  end
+
   it "disconnects the signed-in desk" do
     sign_in user
     allow(Meta::EmbeddedSignup).to receive(:disconnect).and_return(true)

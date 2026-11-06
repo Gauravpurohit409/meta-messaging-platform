@@ -82,7 +82,23 @@ RSpec.describe "Connection page", type: :request do
   end
 
   it "removes the per-desk verify token action" do
-    expect { post "/settings/regenerate_verify_token" }.to raise_error(ActionController::RoutingError)
+    post "/settings/regenerate_verify_token"
+
+    expect(response).to have_http_status(:not_found)
+  end
+
+  it "offers a reconnect when Meta has rejected the token" do
+    account.update!(
+      demo_mode: false,
+      waba_id: "111",
+      phone_number_id: "222",
+      access_token: "tok",
+      reconnect_required: true
+    )
+
+    get settings_path
+
+    expect(response.body).to include("Reconnect")
   end
 
   it "documents Embedded Signup instead of a pasted verify token" do
@@ -102,8 +118,13 @@ RSpec.describe "Connection page", type: :request do
     expect(source).to include("response_type")
     expect(source).to include("sessionInfoVersion")
     expect(source).to include("WA_EMBEDDED_SIGNUP")
-    expect(source).to include("waba_id")
-    expect(source).to include("phone_number_id")
-    expect(source).to include("/settings/embedded_signup")
+    expect(source).to match(/origin\.endsWith\(\s*["']facebook\.com["']\s*\)/)
+    expect(source).to match(/===?\s*["']FINISH["']/)
+    expect(source).to include("CANCEL")
+    expect(source).not_to match(/CANCEL["'][\s\S]{0,160}embedded_signup/)
+    finish = source[/FINISH["'][\s\S]{0,700}/]
+    expect(finish).to include("waba_id")
+    expect(finish).to include("phone_number_id")
+    expect(finish).to include("/settings/embedded_signup")
   end
 end
