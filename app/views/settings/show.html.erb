@@ -43,7 +43,7 @@
           <% if @account.business_name.present? %>
             <p class="mt-1 text-sm text-[#5c564e]"><%= @account.business_name %><%= " · #{@account.display_phone}" if @account.display_phone.present? %></p>
           <% end %>
-          <button type="button" class="<%= btn_primary %> mt-4" data-controller="embedded-signup" data-embedded-signup-app-id-value="<%= Meta::AppConfig.app_id %>" data-embedded-signup-config-id-value="<%= Meta::AppConfig.embedded_signup_configuration_id %>" data-action="embedded-signup#start"><%= @account.reconnect_required? ? "Reconnect" : "Connect with Meta" %></button>
+          <button type="button" class="<%= btn_primary %> mt-4" data-controller="embedded-signup" data-embedded-signup-app-id-value="<%= Meta::AppConfig.app_id %>" data-embedded-signup-config-id-value="<%= Meta::AppConfig.embedded_signup_configuration_id %>" data-embedded-signup-version-value="<%= Meta::Client::GRAPH_VERSION %>" data-action="embedded-signup#start"><%= @account.reconnect_required? ? "Reconnect" : "Connect with Meta" %></button>
           <%= button_to "Disconnect", "#{settings_path}/embedded_signup", method: :delete, class: "#{btn_secondary} mt-3", form: { class: "mt-3" } %>
         <% else %>
           <p class="mt-2 text-sm leading-relaxed text-[#5c564e]">Embedded Signup is not configured. Set the Meta app id, app secret, and configuration id before a business can connect.</p>

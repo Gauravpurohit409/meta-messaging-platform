@@ -1,12 +1,20 @@
 import { Controller } from "@hotwired/stimulus"
 
+const SDK_URL = "https://connect.facebook.net/en_US/sdk.js"
+const SDK_ELEMENT_ID = "facebook-jssdk"
+
 export default class extends Controller {
-  static values = { appId: String, configId: String }
+  static values = {
+    appId: String,
+    configId: String,
+    version: { type: String, default: "v26.0" }
+  }
 
   connect() {
     this.code = null
     this.onMetaMessage = (event) => this.receive(event)
     window.addEventListener("message", this.onMetaMessage)
+    this.prepareSdk()
   }
 
   disconnect() {
@@ -14,13 +22,19 @@ export default class extends Controller {
   }
 
   start() {
-    window.FB.login((response) => {
-      this.code = response && response.authResponse && response.authResponse.code
-    }, {
-      config_id: this.configIdValue,
-      response_type: "code",
-      override_default_response_type: true,
-      extras: { setup: {}, sessionInfoVersion: "3" }
+    return this.prepareSdk().then(() => {
+      window.FB.login((response) => {
+        this.code = response && response.authResponse && response.authResponse.code
+      }, {
+        config_id: this.configIdValue,
+        response_type: "code",
+        override_default_response_type: true,
+        extras: { setup: {}, sessionInfoVersion: "3" }
+      })
+    }).catch(() => {
+      const message = "Could not load the Facebook signup window"
+      this.element.dataset.signupError = message
+      this.element.textContent = message
     })
   }
 
@@ -67,5 +81,40 @@ export default class extends Controller {
     })
     document.body.appendChild(form)
     form.submit()
+  }
+
+  prepareSdk() {
+    if (this.sdkReady) return this.sdkReady
+
+    this.sdkReady = new Promise((resolve, reject) => {
+      const boot = () => {
+        window.FB.init({
+          appId: this.appIdValue,
+          autoLogAppEvents: true,
+          xfbml: false,
+          version: this.versionValue || "v26.0"
+        })
+        resolve()
+      }
+
+      if (window.FB) {
+        boot()
+        return
+      }
+
+      window.fbAsyncInit = boot
+      if (document.getElementById(SDK_ELEMENT_ID)) return
+
+      const script = document.createElement("script")
+      script.id = SDK_ELEMENT_ID
+      script.async = true
+      script.defer = true
+      script.crossOrigin = "anonymous"
+      script.src = SDK_URL
+      script.onerror = () => reject(new Error("Facebook SDK failed to load"))
+      document.head.appendChild(script)
+    })
+
+    return this.sdkReady
   }
 }

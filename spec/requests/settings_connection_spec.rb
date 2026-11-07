@@ -68,6 +68,22 @@ RSpec.describe "Connection page", type: :request do
     expect(response.body).to include('data-embedded-signup-config-id-value="987654321"')
     expect(response.body).not_to include("System user token")
     expect(response.body).not_to include("Verify token")
+    expect(response.body).to include(%(data-embedded-signup-version-value="#{Meta::Client::GRAPH_VERSION}"))
+  end
+
+  it "allows the Facebook SDK and signup frames in the content security policy" do
+    get settings_path
+
+    policy = response.headers["Content-Security-Policy"]
+    expect(policy).to include("https://connect.facebook.net")
+    expect(policy).to include("https://www.facebook.com")
+    expect(policy).to include("https://web.facebook.com")
+    expect(policy).to include("https://fonts.googleapis.com")
+    expect(policy).to include("https://fonts.gstatic.com")
+
+    nonce = policy[/script-src[^;]*'nonce-([^']+)'/, 1]
+    expect(nonce).to be_present
+    expect(response.body).to include(%(nonce="#{nonce}"))
   end
 
   it "explains that Embedded Signup is not configured" do
