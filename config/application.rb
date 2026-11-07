@@ -36,6 +36,7 @@ module Marquee
     # Desk times display in India Standard Time. Override with config.time_zone if needed.
     config.time_zone = "Asia/Kolkata"
     config.active_job.queue_adapter = :sidekiq
+    config.middleware.use Rack::Attack
 
     # Don't generate system test files.
     config.generators.system_tests = nil

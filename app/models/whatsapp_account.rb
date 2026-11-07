@@ -1,5 +1,6 @@
 class WhatsappAccount < ApplicationRecord
   belongs_to :user
+  has_many :inbound_messages, dependent: :destroy
 
   encrypts :access_token
   encrypts :registration_pin

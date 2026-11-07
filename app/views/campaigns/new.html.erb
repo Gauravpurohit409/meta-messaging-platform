@@ -50,6 +50,14 @@
         Or upload a CSV
         <input type="file" name="audience_file" accept=".csv,text/csv" class="mt-2 block w-full text-sm">
       </label>
+      <label class="mt-4 flex items-start gap-3 text-sm">
+        <input type="checkbox" name="consent_confirmed" value="1" class="mt-1" <%= "checked" if params[:consent_confirmed] == "1" %>>
+        <span>Everyone on this list agreed to receive WhatsApp messages from us</span>
+      </label>
+      <label class="mt-4 block text-sm font-medium text-[#3d3832]">
+        Where did they agree? (for example: checkout form, in store sign-up)
+        <input type="text" name="consent_source_note" value="<%= params[:consent_source_note] %>" class="<%= field_class %>">
+      </label>
     </div>
 
     <div class="flex flex-wrap gap-2">

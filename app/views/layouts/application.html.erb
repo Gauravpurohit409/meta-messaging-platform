@@ -30,6 +30,7 @@
               <%= link_to "Templates", templates_path, class: nav_class(templates_path) %>
               <%= link_to "Campaigns", campaigns_path, class: nav_class(campaigns_path) %>
               <%= link_to "Connection", settings_path, class: nav_class(settings_path) %>
+              <%= link_to "Inbox", inbox_path, class: nav_class(inbox_path) %>
             </nav>
 
             <% if current_user.whatsapp_account.demo_mode? %>
@@ -45,6 +46,8 @@
               <% end %>
               <div class="mt-3 flex items-center gap-4 text-sm">
                 <%= link_to "Account", edit_user_registration_path, class: "text-[#d5e4d8] hover:text-white" %>
+                <%= link_to "Privacy", privacy_path, class: "text-[#d5e4d8] hover:text-white" %>
+                <%= link_to "Terms", terms_path, class: "text-[#d5e4d8] hover:text-white" %>
                 <%= button_to "Sign out", destroy_user_session_path, method: :delete, class: "bg-transparent p-0 text-sm text-[#b7c7bb] hover:text-white", form: { class: "inline" } %>
               </div>
             </div>

@@ -52,6 +52,7 @@
 
       <%= form.label :footer_text, "Footer", class: "#{label_class} mt-5" %>
       <%= form.text_field :footer_text, maxlength: 60, placeholder: "Reply here if you need a later slot.", class: field_class, data: { template_preview_target: "footer", action: "input->template-preview#render" } %>
+      <p class="mt-2 text-xs leading-relaxed text-[#6d645b]">Marketing templates need a footer or quick-reply button that tells people how to opt out, for example “Reply STOP to opt out”.</p>
       <p class="mt-1 text-xs text-[#6d645b]">Optional. 60 characters. No variables.</p>
     </div>
 
