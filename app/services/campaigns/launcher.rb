@@ -25,6 +25,14 @@ module Campaigns
           next
         end
 
+        if @campaign.template.category == "MARKETING"
+          missing_consent = missing_consent_numbers
+          if missing_consent.any?
+            @campaign.errors.add(:base, "#{missing_consent.size} recipients have no opt-in record: #{missing_consent.first(3).join(', ')}")
+            next
+          end
+        end
+
         missing = missing_parameters
         if missing.any?
           missing.first(5).each { |message| @campaign.errors.add(:base, message) }
@@ -44,6 +52,12 @@ module Campaigns
     end
 
     private
+
+    def missing_consent_numbers
+      numbers = @campaign.recipients.pluck(:phone_number)
+      consented = Consent.where(user_id: @campaign.user_id, phone_number: numbers).pluck(:phone_number)
+      numbers - consented
+    end
 
     def missing_parameters
       keys = @campaign.template.required_parameter_keys

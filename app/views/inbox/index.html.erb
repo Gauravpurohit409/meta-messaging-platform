@@ -1,0 +1,16 @@
+<% content_for :title, "Inbox — #{app_name}" %>
+<% content_for :heading, "Inbox" %>
+
+<% if @messages.empty? %>
+  <p class="text-sm text-[#5c564e]">No replies yet.</p>
+<% else %>
+  <div class="space-y-3">
+    <% @messages.each do |message| %>
+      <article class="rounded-3xl bg-white p-5 ring-1 ring-[#e4dccf]">
+        <p class="text-sm font-medium"><%= message.from_number %></p>
+        <p class="mt-2 text-sm leading-relaxed"><%= message.body %></p>
+        <p class="mt-2 text-xs text-[#6d645b]"><%= stamp(message.received_at) %></p>
+      </article>
+    <% end %>
+  </div>
+<% end %>

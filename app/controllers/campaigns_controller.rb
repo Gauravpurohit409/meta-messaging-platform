@@ -28,6 +28,18 @@ class CampaignsController < ApplicationController
 
     parsed = Campaigns::AudienceParser.call(text: params[:audience_text], file: params[:audience_file])
     defaults = default_parameters_for(@template)
+    note = params[:consent_source_note].to_s.strip
+    if params[:consent_confirmed] != "1"
+      @campaign.errors.add(:base, "Confirm that everyone on the list opted in")
+    end
+    if note.blank?
+      @campaign.errors.add(:base, "Say where the opt-in was collected")
+    end
+    if @campaign.errors.any?
+      render :new, status: :unprocessable_entity
+      return
+    end
+
     saved = false
 
     Campaign.transaction do
@@ -43,6 +55,12 @@ class CampaignsController < ApplicationController
       @campaign.save!
       parsed.recipients.each do |row|
         @campaign.recipients.create!(phone_number: row.phone, parameters: row.parameters)
+        Consent.record!(
+          user: current_user,
+          phone_number: row.phone,
+          source: "campaign_upload",
+          wording: note.truncate(500)
+        )
       end
       @campaign.update!(total_recipients: parsed.recipients.size)
       saved = true
