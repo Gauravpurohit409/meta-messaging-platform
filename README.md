@@ -88,4 +88,4 @@ After the services are up, open the web service URL, sign in, and use Connection
 
 The blueprint generates the Active Record encryption keys on the web service and copies them to the worker. Leave those in place after a WhatsApp token has been saved. `SECRET_KEY_BASE` can stay blank; the app supplies one when Render does not.
 
-Set `SUPPORT_EMAIL` to the address customers use to ask for deletion. Set `SMTP_ADDRESS`, `SMTP_PORT`, `SMTP_USERNAME`, and `SMTP_PASSWORD` so confirmation and unlock email can be delivered. `RETENTION_WEBHOOK_DAYS` defaults to 30 and `RETENTION_RECIPIENT_DAYS` defaults to 180.
+Set `SUPPORT_EMAIL` to the address customers use to ask for deletion. Set `SMTP_ADDRESS`, `SMTP_PORT`, `SMTP_USERNAME`, and `SMTP_PASSWORD` before you require email confirmation. Until `SMTP_ADDRESS` is set, production lets a new desk sign in without a confirmation email and logs a warning at boot. `RETENTION_WEBHOOK_DAYS` defaults to 30 and covers webhook events and inbound replies. `RETENTION_RECIPIENT_DAYS` defaults to 180. Marketing campaigns saved before opt-in tracking have no consent rows, so they need a new opt-in before they can launch.

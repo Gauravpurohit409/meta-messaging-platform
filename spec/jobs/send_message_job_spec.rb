@@ -83,6 +83,24 @@ RSpec.describe SendMessageJob do
     expect(recipient.reload.status).to eq("sent")
   end
 
+  it "skips a marketing send after the person replies STOP" do
+    user = create(:user)
+    user.whatsapp_account.update!(phone_number_id: "222")
+    recipient = running_campaign(user, category: "MARKETING")
+    Inbox::ApplyInboundMessages.call(
+      "value" => {
+        "metadata" => { "phone_number_id" => "222" },
+        "messages" => [
+          { "id" => "wamid.stop", "from" => recipient.phone_number, "timestamp" => "1762500000", "type" => "text", "text" => { "body" => "STOP" } }
+        ]
+      }
+    )
+
+    described_class.perform_now(recipient.id)
+
+    expect(recipient.reload.error_code).to eq("opted_out")
+  end
+
   it "sends a marketing message when consent is active" do
     user = create(:user)
     recipient = running_campaign(user, category: "MARKETING")

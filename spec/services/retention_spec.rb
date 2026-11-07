@@ -36,6 +36,35 @@ RSpec.describe Retention do
     expect(result[:campaign_recipients]).to eq(1)
   end
 
+  it "deletes old inbound replies and recipients of failed campaigns that never recorded a completion time" do
+    user = create(:user)
+    old_reply = InboundMessage.create!(
+      whatsapp_account: user.whatsapp_account,
+      wa_message_id: "old",
+      from_number: "919830001111",
+      body: "STOP",
+      received_at: 31.days.ago
+    )
+    fresh_reply = InboundMessage.create!(
+      whatsapp_account: user.whatsapp_account,
+      wa_message_id: "fresh",
+      from_number: "919830001111",
+      body: "Hello",
+      received_at: Time.current
+    )
+    template = create(:template, user: user, status: "approved")
+    failed = user.campaigns.create!(template: template, name: "Failed", status: "failed", completed_at: nil, default_parameters: { "body_1" => "A", "body_2" => "B" })
+    failed.update_columns(updated_at: 181.days.ago)
+    recipient = failed.recipients.create!(phone_number: "919830004444")
+
+    result = described_class.purge!
+
+    expect(InboundMessage.find_by(id: old_reply.id)).to be_nil
+    expect(InboundMessage.find_by(id: fresh_reply.id)).to be_present
+    expect(CampaignRecipient.find_by(id: recipient.id)).to be_nil
+    expect(result[:inbound_messages]).to eq(1)
+  end
+
   it "honors a shorter webhook window and ignores bad values" do
     WebhookEvent.create!(event_type: "messages", payload: {}, created_at: 8.days.ago, updated_at: 8.days.ago)
     ENV["RETENTION_WEBHOOK_DAYS"] = "7"

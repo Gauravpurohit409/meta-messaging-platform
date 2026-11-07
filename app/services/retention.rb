@@ -11,9 +11,11 @@ module Retention
 
   def purge!(now: Time.current)
     webhooks = WebhookEvent.where("created_at < ?", now - webhook_days.days).delete_all
-    stale = Campaign.where(status: %w[completed failed]).where("completed_at < ?", now - recipient_days.days)
+    inbound = InboundMessage.where("received_at < ?", now - webhook_days.days).delete_all
+    cutoff = now - recipient_days.days
+    stale = Campaign.where(status: %w[completed failed]).where("COALESCE(completed_at, updated_at) < ?", cutoff)
     recipients = CampaignRecipient.where(campaign_id: stale.select(:id)).delete_all
-    { webhook_events: webhooks, campaign_recipients: recipients }
+    { webhook_events: webhooks, inbound_messages: inbound, campaign_recipients: recipients }
   end
 
   def positive_integer(key, default)
