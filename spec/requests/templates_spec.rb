@@ -47,4 +47,12 @@ RSpec.describe "Templates", type: :request do
     expect(response.body).to include("festive_hamper")
     expect(response.body).not_to include("order_ready")
   end
+
+  it "tells the author that marketing templates need an opt-out line" do
+    sign_in create(:user)
+
+    get new_template_path
+
+    expect(response.body).to include("Reply STOP to opt out")
+  end
 end

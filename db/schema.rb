@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_11_06_123000) do
+ActiveRecord::Schema[8.0].define(version: 2026_11_07_100300) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -54,6 +54,43 @@ ActiveRecord::Schema[8.0].define(version: 2026_11_06_123000) do
     t.index ["user_id"], name: "index_campaigns_on_user_id"
   end
 
+  create_table "consents", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "phone_number", null: false
+    t.string "source", null: false
+    t.text "wording", null: false
+    t.datetime "consented_at", null: false
+    t.datetime "revoked_at"
+    t.string "revoked_reason"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id", "phone_number"], name: "index_consents_on_user_id_and_phone_number", unique: true
+    t.index ["user_id"], name: "index_consents_on_user_id"
+  end
+
+  create_table "data_deletion_requests", force: :cascade do |t|
+    t.string "confirmation_code", null: false
+    t.string "meta_user_id"
+    t.string "status", default: "completed", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["confirmation_code"], name: "index_data_deletion_requests_on_confirmation_code", unique: true
+  end
+
+  create_table "inbound_messages", force: :cascade do |t|
+    t.bigint "whatsapp_account_id", null: false
+    t.string "wa_message_id", null: false
+    t.string "from_number", null: false
+    t.string "message_type", default: "text", null: false
+    t.text "body"
+    t.datetime "received_at", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["wa_message_id"], name: "index_inbound_messages_on_wa_message_id", unique: true
+    t.index ["whatsapp_account_id", "received_at"], name: "index_inbound_messages_on_whatsapp_account_id_and_received_at"
+    t.index ["whatsapp_account_id"], name: "index_inbound_messages_on_whatsapp_account_id"
+  end
+
   create_table "templates", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.string "meta_template_id"
@@ -87,8 +124,17 @@ ActiveRecord::Schema[8.0].define(version: 2026_11_06_123000) do
     t.string "company"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "confirmation_token"
+    t.datetime "confirmed_at"
+    t.datetime "confirmation_sent_at"
+    t.string "unconfirmed_email"
+    t.integer "failed_attempts", default: 0, null: false
+    t.string "unlock_token"
+    t.datetime "locked_at"
+    t.index ["confirmation_token"], name: "index_users_on_confirmation_token", unique: true
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
+    t.index ["unlock_token"], name: "index_users_on_unlock_token", unique: true
   end
 
   create_table "webhook_events", force: :cascade do |t|
@@ -127,6 +173,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_11_06_123000) do
   add_foreign_key "campaign_recipients", "campaigns"
   add_foreign_key "campaigns", "templates"
   add_foreign_key "campaigns", "users"
+  add_foreign_key "consents", "users"
+  add_foreign_key "inbound_messages", "whatsapp_accounts"
   add_foreign_key "templates", "users"
   add_foreign_key "whatsapp_accounts", "users"
 end

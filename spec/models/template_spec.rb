@@ -45,4 +45,25 @@ RSpec.describe Template, type: :model do
     expect(template.errors[:footer_text]).to be_present
     expect(template.errors[:header_text]).to be_present
   end
+
+  it "accepts a marketing template that tells people how to opt out" do
+    with_footer = build(:template, category: "MARKETING", footer_text: "Reply STOP to opt out")
+    expect(with_footer.valid?(:submit)).to be(true)
+
+    with_button = build(:template, category: "MARKETING", buttons: [ { "type" => "QUICK_REPLY", "text" => "Stop" } ])
+    expect(with_button.valid?(:submit)).to be(true)
+  end
+
+  it "rejects a marketing template with no opt-out line" do
+    template = build(:template, category: "MARKETING", footer_text: "Northwind Grocery")
+
+    expect(template.valid?(:submit)).to be(false)
+    expect(template.errors.full_messages.join).to include("Marketing templates need an opt-out line")
+  end
+
+  it "does not require an opt-out line on a utility template" do
+    template = build(:template, category: "UTILITY", footer_text: nil)
+
+    expect(template.valid?(:submit)).to be(true)
+  end
 end
