@@ -1,0 +1,13 @@
+<% content_for :title, "Privacy — #{app_name}" %>
+<% content_for :unframed, "true" %>
+
+<div class="mx-auto max-w-3xl px-5 py-12">
+  <h1 class="font-serif text-4xl">Privacy</h1>
+  <div class="mt-6 space-y-4 text-sm leading-relaxed text-[#3d3832]">
+    <p><%= app_name %> stores the name, email, and company on a desk, the WhatsApp phone numbers and message content a business uploads, and the delivery status WhatsApp sends back.</p>
+    <p>Messages are sent through Meta's WhatsApp Business Platform. Meta processes those messages under its own terms.</p>
+    <p>Webhook events and inbound replies are kept for <%= Retention.webhook_days %> days. Recipients of finished campaigns are kept for <%= Retention.recipient_days %> days. A finished campaign with no completion time is aged from its last update.</p>
+    <p>Delete a desk from the Account page, or email <%= app_support_email %>. A data deletion status page is available at /data_deletion/ followed by the confirmation code Meta returns.</p>
+  </div>
+  <p class="mt-8 text-sm"><%= link_to "Home", root_path %> · <%= link_to "Terms", terms_path %></p>
+</div>

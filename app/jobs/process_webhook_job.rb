@@ -6,6 +6,7 @@ class ProcessWebhookJob < ApplicationJob
       Templates::ApplyStatus.call(event.payload)
     when "messages"
       Campaigns::ApplyMessageStatus.call(event.payload)
+      Inbox::ApplyInboundMessages.call(event.payload)
     when "account_update"
       Accounts::ApplyAccountUpdate.call(event.payload)
     end

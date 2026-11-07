@@ -4,8 +4,10 @@ if demo.new_record?
   demo.company = "Northwind Grocery"
   demo.password = "password123"
   demo.password_confirmation = "password123"
+  demo.confirmed_at ||= Time.current
   demo.save!
 end
+demo.update!(confirmed_at: Time.current) if demo.confirmed_at.nil?
 
 demo.whatsapp_account.update!(display_phone: "+91 33 4000 2210") if demo.whatsapp_account.display_phone.blank?
 
@@ -38,7 +40,7 @@ seed_template(demo, {
   status: "pending",
   header_text: nil,
   body: "Hello {{1}}, the Diwali hamper is back and orders close on {{2}}.",
-  footer_text: "Northwind Grocery, Ballygunge",
+  footer_text: "Reply STOP to opt out",
   buttons: [ { "type" => "URL", "text" => "Shop hampers", "url" => "https://northwind.example/hampers" } ],
   example_values: { "body_1" => "Asha", "body_2" => "Friday" },
   meta_template_id: "demo_festive_hamper",

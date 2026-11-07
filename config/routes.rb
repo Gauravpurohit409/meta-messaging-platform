@@ -2,6 +2,10 @@ Rails.application.routes.draw do
   devise_for :users, controllers: { registrations: "users/registrations" }
 
   root "pages#home"
+  get "privacy", to: "pages#privacy"
+  get "terms", to: "pages#terms"
+  get "inbox", to: "inbox#index", as: :inbox
+  get "data_deletion/:code", to: "data_deletion#show", as: :data_deletion_status
   get "dashboard", to: "dashboard#show", as: :dashboard
 
   resources :templates do
@@ -29,6 +33,7 @@ Rails.application.routes.draw do
   namespace :webhooks do
     get "meta", to: "meta#verify", as: :meta
     post "meta", to: "meta#receive"
+    post "data_deletion", to: "data_deletion#create"
   end
 
   get "up" => "rails/health#show", as: :rails_health_check

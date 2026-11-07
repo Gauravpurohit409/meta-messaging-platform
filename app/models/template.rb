@@ -34,6 +34,7 @@ class Template < ApplicationRecord
     "de" => "German"
   }.freeze
   BUTTON_TYPES = %w[QUICK_REPLY URL PHONE_NUMBER].freeze
+  OPT_OUT_PATTERN = /\b(stop|opt[\s-]?out|unsubscribe)\b/i
   MAX_BUTTONS = 10
 
   belongs_to :user
@@ -57,6 +58,7 @@ class Template < ApplicationRecord
   validate :footer_has_no_variables
   validate :buttons_ok
   validate :examples_cover_variables, on: :submit
+  validate :marketing_has_opt_out, on: :submit
 
   after_update_commit :broadcast_status_change, if: :saved_change_to_status?
 
@@ -166,6 +168,14 @@ class Template < ApplicationRecord
     return unless footer_text.match?(/\{\{/)
 
     errors.add(:footer_text, "cannot contain variables")
+  end
+
+  def marketing_has_opt_out
+    return unless category == "MARKETING"
+    return if footer_text.to_s.match?(OPT_OUT_PATTERN)
+    return if Array(buttons).any? { |button| button["type"] == "QUICK_REPLY" && button["text"].to_s.match?(OPT_OUT_PATTERN) }
+
+    errors.add(:base, "Marketing templates need an opt-out line, for example the footer “Reply STOP to opt out”")
   end
 
   def buttons_ok

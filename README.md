@@ -72,10 +72,11 @@ bundle exec rspec
 
 | Resource | Plan | Role |
 | --- | --- | --- |
-| `meta-messaging-db` | Free Postgres | App database. Expires 30 days after creation unless you upgrade it. |
-| `meta-messaging-redis` | Free Key Value | Sidekiq and Action Cable. Data is dropped whenever the instance restarts. |
-| `meta-messaging-platform` | Free web | Puma. Sleeps after inactivity. |
-| `meta-messaging-worker` | Starter | Sidekiq. This is a paid service so sends keep running while the web service sleeps. |
+| `meta-messaging-db` | Basic Postgres | App database. Stays up so desks are not wiped after 30 days. |
+| `meta-messaging-redis` | Starter | Sidekiq and Action Cable. Keeps queued sends across restarts. |
+| `meta-messaging-platform` | Starter | Puma. Stays awake so Meta can deliver webhooks. |
+| `meta-messaging-worker` | Starter | Sidekiq. Sends campaigns and processes webhooks. |
+| `meta-messaging-retention` | Starter | Daily purge of old webhook events and old recipients. |
 
 The first deploy migrates and seeds the demo desk (`demo@marquee.test` / `password123`). The health check is `/up`.
 
@@ -86,3 +87,5 @@ You do not need a shell or a local machine to set `SECRET_KEY_BASE`. A blank val
 After the services are up, open the web service URL, sign in, and use Connection when you want live WhatsApp sends. Add `META_APP_SECRET` on the web service before Meta starts posting webhooks. Webhook URL: `https://<your-service>.onrender.com/webhooks/meta`.
 
 The blueprint generates the Active Record encryption keys on the web service and copies them to the worker. Leave those in place after a WhatsApp token has been saved. `SECRET_KEY_BASE` can stay blank; the app supplies one when Render does not.
+
+Set `SUPPORT_EMAIL` to the address customers use to ask for deletion. Set `SMTP_ADDRESS`, `SMTP_PORT`, `SMTP_USERNAME`, and `SMTP_PASSWORD` before you require email confirmation. Until `SMTP_ADDRESS` is set, production lets a new desk sign in without a confirmation email and logs a warning at boot. `RETENTION_WEBHOOK_DAYS` defaults to 30 and covers webhook events and inbound replies. `RETENTION_RECIPIENT_DAYS` defaults to 180. Marketing campaigns saved before opt-in tracking have no consent rows, so they need a new opt-in before they can launch.
