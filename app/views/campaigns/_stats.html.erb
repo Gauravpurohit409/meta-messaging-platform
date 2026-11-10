@@ -9,6 +9,10 @@
   <div class="mt-4 h-2 overflow-hidden rounded-full bg-[#efe8da]">
     <div class="h-2 rounded-full bg-[#1f7a45]" style="width: <%= width %>%"></div>
   </div>
+  <p class="mt-4 text-sm text-[#5c564e]">Estimated delivery cost <%= number_to_currency(campaign.estimated_delivery_cost) %></p>
+  <% if campaign.high_failure_rate? %>
+    <p class="mt-2 text-sm text-[#7a2a22]">More than 20% of this campaign failed.</p>
+  <% end %>
   <dl class="mt-5 grid grid-cols-2 gap-4 sm:grid-cols-4">
     <div>
       <dt class="text-xs uppercase tracking-wide text-[#6d645b]">Sent</dt>
