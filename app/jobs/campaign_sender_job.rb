@@ -6,7 +6,7 @@ class CampaignSenderJob < ApplicationJob
     return unless %w[running scheduled].include?(campaign.status)
     return if campaign.scheduled_at.present? && campaign.scheduled_at.future?
 
-    unless campaign.template.approved?
+    unless campaign.template.approved? && (campaign.variant_template.nil? || campaign.variant_template.approved?)
       campaign.update!(
         status: "failed",
         failure_reason: "The template was no longer approved when the send started.",
