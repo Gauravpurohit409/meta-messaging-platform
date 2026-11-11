@@ -47,4 +47,16 @@ RSpec.describe Campaign, type: :model do
     expect(hot.high_failure_rate?).to be(true)
     expect(small.high_failure_rate?).to be(false)
   end
+
+  it "rejects a version B template of a different type" do
+    user = create(:user)
+    campaign = user.campaigns.new(
+      name: "Compare",
+      template: create(:template, user: user, status: "approved", category: "UTILITY"),
+      variant_template: create(:template, user: user, status: "approved", category: "MARKETING", footer_text: "Reply STOP to opt out")
+    )
+
+    expect(campaign).not_to be_valid
+    expect(campaign.errors[:variant_template].join).to include("same type")
+  end
 end

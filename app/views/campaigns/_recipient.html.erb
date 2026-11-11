@@ -1,5 +1,5 @@
 <tr id="<%= dom_id(recipient) %>" class="border-t border-[#efe8da]">
-  <td class="px-4 py-3 font-medium"><%= recipient.phone_number %></td>
+  <td class="px-4 py-3 font-medium"><%= recipient.phone_number %><% if recipient.variant.present? %> <span class="text-xs uppercase text-[#6d645b]">Version <%= recipient.variant %></span><% end %></td>
   <td class="px-4 py-3"><%= status_pill(recipient.status) %></td>
   <td class="px-4 py-3 text-sm text-[#5c564e]">
     <% details = recipient.parameters.presence || {} %>
