@@ -1,5 +1,11 @@
 class Campaign < ApplicationRecord
   STATUSES = %w[draft scheduled running completed failed].freeze
+  # North America per-delivered-message rates from the October 2026 R&D note.
+  DELIVERY_RATES = {
+    "MARKETING" => BigDecimal("0.02875"),
+    "UTILITY" => BigDecimal("0.00391"),
+    "AUTHENTICATION" => BigDecimal("0.00391")
+  }.freeze
 
   belongs_to :user
   belongs_to :template
@@ -29,6 +35,14 @@ class Campaign < ApplicationRecord
   # receipts arrive after this, so they are not part of the queue.
   def dispatched_count
     total_recipients - recipients.where(status: %w[pending queued]).count
+  end
+
+  def estimated_delivery_cost
+    DELIVERY_RATES.fetch(template.category, BigDecimal("0")) * delivered_count
+  end
+
+  def high_failure_rate?
+    total_recipients >= 5 && failed_count * 5 >= total_recipients
   end
 
   def refresh_completion!
