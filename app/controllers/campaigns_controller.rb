@@ -88,6 +88,9 @@ class CampaignsController < ApplicationController
   end
 
   def launch
+    apply_variant_template
+    return if performed?
+
     scheduled_at = parsed_schedule
     if Campaigns::Launcher.call(@campaign, scheduled_at: scheduled_at)
       @campaign.reload
@@ -126,6 +129,27 @@ class CampaignsController < ApplicationController
   end
 
   private
+
+  def apply_variant_template
+    if params[:variant_template_id].blank?
+      @campaign.variant_template = nil
+      return
+    end
+
+    chosen = current_user.templates.approved.find_by(id: params[:variant_template_id])
+    if chosen.nil?
+      @campaign.errors.add(:base, "Choose an approved template for version B")
+      @recipients = @campaign.recipients.order(:id)
+      render :show, status: :unprocessable_entity
+      return
+    end
+
+    @campaign.variant_template = chosen
+    return if @campaign.valid?
+
+    @recipients = @campaign.recipients.order(:id)
+    render :show, status: :unprocessable_entity
+  end
 
   def set_campaign
     @campaign = current_user.campaigns.includes(:template).find(params[:id])

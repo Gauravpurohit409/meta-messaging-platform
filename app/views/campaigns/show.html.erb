@@ -20,6 +20,11 @@
       <p class="mt-2 text-sm text-[#6d645b]">Demo rule: numbers ending in 0000 fail delivery. Everyone else is marked delivered a moment later.</p>
     <% end %>
     <label class="mt-4 block text-sm">
+      Version B template
+      <%= select_tag :variant_template_id, options_for_select([ [ "No A/B test", "" ] ] + current_user.templates.approved.where.not(id: @campaign.template_id).order(:name).map { |template| [ template.campaign_option_label, template.id ] }, @campaign.variant_template_id), class: field_class %>
+    </label>
+    <p class="mt-2 text-xs text-[#6d645b]">Leave this empty to send version A to everyone. Otherwise people alternate between A and B.</p>
+    <label class="mt-4 block text-sm">
       Schedule for later
       <input type="datetime-local" name="scheduled_at" class="<%= field_class %> sm:max-w-xs">
     </label>

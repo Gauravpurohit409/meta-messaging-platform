@@ -101,6 +101,27 @@ RSpec.describe SendMessageJob do
     expect(recipient.reload.error_code).to eq("opted_out")
   end
 
+  it "sends version B with the version B template" do
+    user = create(:user)
+    version_a = create(:template, user: user, status: "approved", category: "UTILITY", name: "version_a")
+    version_b = create(:template, user: user, status: "approved", category: "UTILITY", name: "version_b")
+    campaign = user.campaigns.create!(
+      template: version_a,
+      variant_template: version_b,
+      name: "Compare",
+      status: "running",
+      default_parameters: { "body_1" => "Asha", "body_2" => "NW-1" }
+    )
+    recipient = campaign.recipients.create!(phone_number: "919830001111", status: "queued", variant: "b")
+    client = instance_double(Meta::Client)
+    allow(Meta::Client).to receive(:new).and_return(client)
+    expect(client).to receive(:send_template_message).with(hash_including(template: version_b)).and_return("messages" => [ { "id" => "wamid.b" } ])
+
+    described_class.perform_now(recipient.id)
+
+    expect(recipient.reload.message_id).to eq("wamid.b")
+  end
+
   it "sends a marketing message when consent is active" do
     user = create(:user)
     recipient = running_campaign(user, category: "MARKETING")

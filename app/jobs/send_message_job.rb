@@ -13,7 +13,8 @@ class SendMessageJob < ApplicationJob
       return
     end
 
-    if campaign.template.category == "MARKETING" &&
+    template = campaign.template_for(recipient)
+    if template.category == "MARKETING" &&
         Consent.where(user_id: campaign.user_id, phone_number: recipient.phone_number).where.not(revoked_at: nil).exists?
       recipient.mark_failed!(code: "opted_out", message: "This person opted out of marketing messages")
       return
@@ -21,7 +22,7 @@ class SendMessageJob < ApplicationJob
 
     result = Meta::Client.new(account).send_template_message(
       to: recipient.phone_number,
-      template: campaign.template,
+      template: template,
       parameters: campaign.parameters_for(recipient)
     )
     recipient.mark_sent!(result.dig("messages", 0, "id"))

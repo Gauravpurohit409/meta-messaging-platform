@@ -20,6 +20,13 @@ module Campaigns
           @campaign.errors.add(:base, "The template has to be approved before you can send it")
           next
         end
+        if @campaign.variant_template && !@campaign.variant_template.approved?
+          @campaign.errors.add(:base, "Version B has to be approved before you can send it")
+          next
+        end
+        unless @campaign.valid?
+          next
+        end
         if @campaign.recipients.none?
           @campaign.errors.add(:base, "Add at least one recipient")
           next
@@ -38,6 +45,8 @@ module Campaigns
           missing.first(5).each { |message| @campaign.errors.add(:base, message) }
           next
         end
+
+        @campaign.assign_variants!
 
         if @scheduled_at.present? && @scheduled_at.future?
           @campaign.update!(status: "scheduled", scheduled_at: @scheduled_at, failure_reason: nil)

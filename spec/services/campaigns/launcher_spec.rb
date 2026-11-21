@@ -57,6 +57,40 @@ RSpec.describe Campaigns::Launcher do
     expect(campaign.reload.status).to eq("running")
   end
 
+  it "splits recipients between version A and version B" do
+    user = create(:user)
+    first = create(:template, user: user, status: "approved", category: "UTILITY")
+    second = create(:template, user: user, status: "approved", category: "UTILITY")
+    campaign = user.campaigns.create!(
+      template: first,
+      variant_template: second,
+      name: "Compare",
+      default_parameters: { "body_1" => "Asha", "body_2" => "NW-1" }
+    )
+    one = campaign.recipients.create!(phone_number: "919830001111")
+    two = campaign.recipients.create!(phone_number: "919830002222")
+    three = campaign.recipients.create!(phone_number: "919830003333")
+
+    expect(described_class.call(campaign)).to be(true)
+    expect([ one, two, three ].map { |recipient| recipient.reload.variant }).to eq(%w[a b a])
+  end
+
+  it "refuses a version B template that is not approved" do
+    user = create(:user)
+    first = create(:template, user: user, status: "approved")
+    second = create(:template, user: user, status: "pending")
+    campaign = user.campaigns.create!(
+      template: first,
+      name: "Compare",
+      default_parameters: { "body_1" => "Asha", "body_2" => "NW-1" }
+    )
+    campaign.update_column(:variant_template_id, second.id)
+    campaign.recipients.create!(phone_number: "919830001111")
+
+    expect(described_class.call(campaign.reload)).to be(false)
+    expect(campaign.errors.full_messages.join).to include("Version B")
+  end
+
   it "launches a utility campaign with no consent rows" do
     campaign = approved_campaign(category: "UTILITY")
 

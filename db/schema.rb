@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_11_07_100300) do
+ActiveRecord::Schema[8.0].define(version: 2026_11_11_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -27,6 +27,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_11_07_100300) do
     t.datetime "read_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "variant"
     t.index ["campaign_id", "phone_number"], name: "index_campaign_recipients_on_campaign_id_and_phone_number", unique: true
     t.index ["campaign_id"], name: "index_campaign_recipients_on_campaign_id"
     t.index ["message_id"], name: "index_campaign_recipients_on_message_id"
@@ -49,9 +50,11 @@ ActiveRecord::Schema[8.0].define(version: 2026_11_07_100300) do
     t.integer "failed_count", default: 0, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "variant_template_id"
     t.index ["status"], name: "index_campaigns_on_status"
     t.index ["template_id"], name: "index_campaigns_on_template_id"
     t.index ["user_id"], name: "index_campaigns_on_user_id"
+    t.index ["variant_template_id"], name: "index_campaigns_on_variant_template_id"
   end
 
   create_table "consents", force: :cascade do |t|
@@ -172,6 +175,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_11_07_100300) do
 
   add_foreign_key "campaign_recipients", "campaigns"
   add_foreign_key "campaigns", "templates"
+  add_foreign_key "campaigns", "templates", column: "variant_template_id"
   add_foreign_key "campaigns", "users"
   add_foreign_key "consents", "users"
   add_foreign_key "inbound_messages", "whatsapp_accounts"
