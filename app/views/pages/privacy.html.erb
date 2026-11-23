@@ -4,10 +4,12 @@
 <div class="mx-auto max-w-3xl px-5 py-12">
   <h1 class="font-serif text-4xl">Privacy</h1>
   <div class="mt-6 space-y-4 text-sm leading-relaxed text-[#3d3832]">
-    <p><%= app_name %> stores the name, email, and company on a desk, the WhatsApp phone numbers and message content a business uploads, and the delivery status WhatsApp sends back.</p>
-    <p>Messages are sent through Meta's WhatsApp Business Platform. Meta processes those messages under its own terms.</p>
-    <p>Webhook events and inbound replies are kept for <%= Retention.webhook_days %> days. Recipients of finished campaigns are kept for <%= Retention.recipient_days %> days. A finished campaign with no completion time is aged from its last update.</p>
-    <p>Delete a desk from the Account page, or email <%= app_support_email %>. A data deletion status page is available at /data_deletion/ followed by the confirmation code Meta returns.</p>
+    <p><%= app_name %> is a desk for sending approved WhatsApp templates to people a business says opted in. It is not a support inbox and it does not offer a free-form reply box.</p>
+    <p>For the business account we store the name, email, and company, plus the WhatsApp Business account id, phone number id, and access token needed to send. The access token and the phone registration PIN are encrypted. For each campaign we store the template text, the recipient phone numbers, the template variables the business supplied, and the delivery status WhatsApp reports. If someone replies, we store that reply long enough to honor STOP and START. We also store the opt-in note the business typed when it uploaded the list, and the webhook payloads Meta sends.</p>
+    <p>We use that data to submit templates, send them only to the uploaded list, stop marketing after an opt-out, and show whether a message was delivered. The messages themselves go through Meta's WhatsApp Business Platform. Meta processes them under its own terms.</p>
+    <p>Webhook events and inbound replies are kept for <%= Retention.webhook_days %> days. Recipient rows on finished campaigns are kept for <%= Retention.recipient_days %> days. The business account itself stays until someone deletes it.</p>
+    <p>A person opts out of marketing by replying STOP, or stop all, unsubscribe, cancel, end, quit, or opt out. Later marketing templates are not sent to that number until they reply START. Utility and authentication templates are not blocked by that opt-out.</p>
+    <p>A signed-in business deletes its desk from the Account page. That removes templates, campaigns, recipients, consent notes, replies, and the saved WhatsApp connection. Anyone can also email <%= app_support_email %>. When Meta calls the data-deletion callback at /webhooks/data_deletion, we record the request and the status page is /webhooks/data_deletion/ followed by the confirmation code. <%= app_name %> does not store a Facebook profile. Deleting the desk is how the business data is removed.</p>
   </div>
   <p class="mt-8 text-sm"><%= link_to "Home", root_path %> · <%= link_to "Terms", terms_path %></p>
 </div>

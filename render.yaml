@@ -63,7 +63,7 @@ services:
       - key: META_GRAPH_VERSION
         value: v26.0
       - key: SUPPORT_EMAIL
-        sync: false
+        value: tech.admin@techspiirehub.com
       - key: SMTP_ADDRESS
         sync: false
       - key: SMTP_PORT
