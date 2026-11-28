@@ -9,7 +9,8 @@ RSpec.describe "Legal pages", type: :request do
     expect(response.body).to include("30")
     expect(response.body).to include("180")
     expect(response.body).to include("WhatsApp")
-    expect(response.body).to include("support@example.com")
+    expect(response.body).to include("tech.admin@techspiirehub.com")
+    expect(response.body).to include("opt out")
 
     get terms_path
     expect(response).to have_http_status(:ok)

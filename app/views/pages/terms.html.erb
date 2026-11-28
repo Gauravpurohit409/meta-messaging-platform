@@ -4,9 +4,10 @@
 <div class="mx-auto max-w-3xl px-5 py-12">
   <h1 class="font-serif text-4xl">Terms</h1>
   <div class="mt-6 space-y-4 text-sm leading-relaxed text-[#3d3832]">
-    <p>A business may message only people who opted in to hear from it.</p>
-    <p>Marketing messages must include a way to opt out. A person who sends STOP, or an equivalent word, is not sent further marketing messages until they opt back in.</p>
-    <p>Use of WhatsApp must follow the WhatsApp Business policy. Accounts that breach Meta's policies can be suspended.</p>
+    <p><%= app_name %> sends WhatsApp template messages that Meta has approved. A business may send them only to people who opted in to hear from that business.</p>
+    <p>The product does not provide a support inbox or a box for free-form replies. Inbound messages are kept so the desk can record STOP and START.</p>
+    <p>A marketing template must tell people how to opt out. A person who sends STOP, or stop all, unsubscribe, cancel, end, quit, or opt out, is not sent further marketing until they send START.</p>
+    <p>Use of WhatsApp must follow the WhatsApp Business policy. A desk that breaches Meta's policies can be suspended. Questions about these terms go to <%= app_support_email %>.</p>
   </div>
   <p class="mt-8 text-sm"><%= link_to "Home", root_path %> · <%= link_to "Privacy", privacy_path %></p>
 </div>

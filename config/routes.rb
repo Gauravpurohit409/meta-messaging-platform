@@ -34,6 +34,7 @@ Rails.application.routes.draw do
     get "meta", to: "meta#verify", as: :meta
     post "meta", to: "meta#receive"
     post "data_deletion", to: "data_deletion#create"
+    get "data_deletion/:code", to: "/data_deletion#show", as: :data_deletion_status
   end
 
   get "up" => "rails/health#show", as: :rails_health_check

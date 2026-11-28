@@ -4,7 +4,7 @@ module ApplicationHelper
   end
 
   def app_support_email
-    ENV["SUPPORT_EMAIL"].presence || "support@example.com"
+    ENV["SUPPORT_EMAIL"].presence || "tech.admin@techspiirehub.com"
   end
 
   def field_class

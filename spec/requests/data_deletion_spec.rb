@@ -63,6 +63,9 @@ RSpec.describe "Data deletion", type: :request do
     record = DataDeletionRequest.create!(meta_user_id: "42")
 
     get data_deletion_status_path(record.confirmation_code)
+    expect(response).to have_http_status(:ok)
+
+    get webhooks_data_deletion_status_path(record.confirmation_code)
 
     expect(response).to have_http_status(:ok)
     expect(response.body).to include(record.confirmation_code)

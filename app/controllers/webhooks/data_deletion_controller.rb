@@ -12,7 +12,7 @@ module Webhooks
 
       record = DataDeletionRequest.create!(meta_user_id: payload["user_id"])
       render json: {
-        url: data_deletion_status_url(code: record.confirmation_code),
+        url: webhooks_data_deletion_status_url(code: record.confirmation_code),
         confirmation_code: record.confirmation_code
       }
     end
